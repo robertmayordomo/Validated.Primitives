@@ -48,6 +48,12 @@ public abstract record ValidatedValueObject<T> where T : notnull
 
     public override string ToString() => Value?.ToString() ?? string.Empty;
 
+    // Implicit conversion to underlying type
+    public static implicit operator T(ValidatedValueObject<T> valueObject)
+    {
+        return valueObject.Value;
+    }
+
     // Override equality to only compare Value, excluding Validators
     public virtual bool Equals(ValidatedValueObject<T>? other)
     {
