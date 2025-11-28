@@ -13,44 +13,92 @@ on:
         required: true
         type: boolean
         default: false
-      run-number:
-        description: 'Build workflow run number to download artifacts from (leave empty for latest successful run)'
-        required: false
-        type: string
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
 
 env:
   DOTNET_VERSION: '8.0.x'
+  PROJECT_PATH: 'src/Valdiated.Primatives/Validated.Primitives.csproj'
+  DOMAIN_PROJECT_PATH: 'src/Validated.Primitives.Domain/Validated.Primitives.Domain.csproj'
 
 jobs:
-  publish-nuget:
+  build-and-publish:
     runs-on: ubuntu-latest
-    if: inputs.publish-to-nuget
     permissions:
       contents: read
+      packages: write
     
     steps:
-    - name: Download artifacts from build workflow
-      uses: dawidd6/action-download-artifact@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
       with:
-        workflow: build-and-test.yml
-        run_number: ${{ inputs.run-number }}
-        name: nuget-package
-        path: ./artifacts
-        if_no_artifact_found: fail
+        fetch-depth: 0  # Required for GitVersion
     
-    - name: Download symbol packages from build workflow
-      uses: dawidd6/action-download-artifact@v3
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v1
       with:
-        workflow: build-and-test.yml
-        run_number: ${{ inputs.run-number }}
-        name: symbol-package
-        path: ./artifacts
-        if_no_artifact_found: fail
+        versionSpec: '5.x'
+    
+    - name: Determine Version
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v1
+      with:
+        useConfigFile: true
+        configFilePath: GitVersion.yml
+    
+    - name: Display GitVersion outputs
+      run: |
+        echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+        echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
+        echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
+        echo "InformationalVersion: ${{ steps.gitversion.outputs.informationalVersion }}"
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build
+      run: |
+        dotnet build --configuration Release --no-restore \
+          /p:Version=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
+          /p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }} \
+          /p:CI=true
+    
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
+    
+    - name: Pack NuGet Packages
+      run: |
+        dotnet pack ${{ env.PROJECT_PATH }} \
+          --configuration Release \
+          --no-build \
+          --output ./artifacts \
+          /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }} \
+          /p:Version=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
+          /p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }} \
+          /p:CI=true
+        
+        dotnet pack ${{ env.DOMAIN_PROJECT_PATH }} \
+          --configuration Release \
+          --no-build \
+          --output ./artifacts \
+          /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }} \
+          /p:Version=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
+          /p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }} \
+          /p:CI=true
     
     - name: Display packages to publish
       run: |
@@ -58,9 +106,10 @@ jobs:
         ls -lh ./artifacts/*.nupkg
         echo ""
         echo "=== Symbol Packages (.snupkg) ==="
-        ls -lh ./artifacts/*.snupkg
+        ls -lh ./artifacts/*.snupkg || echo "No symbol packages found"
     
     - name: Publish to NuGet.org
+      if: inputs.publish-to-nuget != false && (github.event_name == 'release' || github.event_name == 'push' || inputs.publish-to-nuget == true)
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       run: |
@@ -70,42 +119,22 @@ jobs:
           --skip-duplicate
     
     - name: Publish Symbols to NuGet.org
+      if: inputs.publish-to-nuget != false && (github.event_name == 'release' || github.event_name == 'push' || inputs.publish-to-nuget == true)
+      continue-on-error: true
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       run: |
-        dotnet nuget push ./artifacts/*.snupkg \
-          --api-key $NUGET_API_KEY \
-          --source https://api.nuget.org/v3/index.json \
-          --skip-duplicate
-
-  publish-github-packages:
-    runs-on: ubuntu-latest
-    if: inputs.publish-to-github
-    permissions:
-      packages: write
-      contents: read
-    
-    steps:
-    - name: Download artifacts from build workflow
-      uses: dawidd6/action-download-artifact@v3
-      with:
-        workflow: build-and-test.yml
-        run_number: ${{ inputs.run-number }}
-        name: nuget-package
-        path: ./artifacts
-        if_no_artifact_found: fail
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-    
-    - name: Display packages to publish
-      run: |
-        echo "=== NuGet Packages (.nupkg) ==="
-        ls -lh ./artifacts/*.nupkg
+        if ls ./artifacts/*.snupkg 1> /dev/null 2>&1; then
+          dotnet nuget push ./artifacts/*.snupkg \
+            --api-key $NUGET_API_KEY \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+        else
+          echo "No symbol packages to publish"
+        fi
     
     - name: Publish to GitHub Packages
+      if: inputs.publish-to-github == true || github.event_name == 'release'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -113,3 +142,18 @@ jobs:
           --api-key $GITHUB_TOKEN \
           --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
           --skip-duplicate
+    
+    - name: Upload NuGet Package Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages-${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        path: ./artifacts/*.nupkg
+        retention-days: 90
+    
+    - name: Upload Symbol Package Artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: symbol-packages-${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        path: ./artifacts/*.snupkg
+        retention-days: 90

@@ -6,7 +6,6 @@
     
     <!-- NuGet Package Metadata -->
     <PackageId>Validated.Primitives.Domain</PackageId>
-    <Version>1.0.0</Version>
     <Authors>Robert Butler</Authors>
     <Company>Major Domo Softare</Company>
     <Product>Validated Primitives Domain</Product>
@@ -20,7 +19,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Initial release with Address, ContactInformation, and PersonName domain types.</PackageReleaseNotes>
+    <PackageReleaseNotes>Domain models including Address, ContactInformation, and PersonName types.</PackageReleaseNotes>
     
     <!-- Build Output Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
