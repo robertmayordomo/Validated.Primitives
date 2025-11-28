@@ -1,0 +1,115 @@
+name: Publish to NuGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish-to-nuget:
+        description: 'Publish to NuGet.org'
+        required: true
+        type: boolean
+        default: true
+      publish-to-github:
+        description: 'Publish to GitHub Packages'
+        required: true
+        type: boolean
+        default: false
+      run-number:
+        description: 'Build workflow run number to download artifacts from (leave empty for latest successful run)'
+        required: false
+        type: string
+
+env:
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    if: inputs.publish-to-nuget
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Download artifacts from build workflow
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: build-and-test.yml
+        run_number: ${{ inputs.run-number }}
+        name: nuget-package
+        path: ./artifacts
+        if_no_artifact_found: fail
+    
+    - name: Download symbol packages from build workflow
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: build-and-test.yml
+        run_number: ${{ inputs.run-number }}
+        name: symbol-package
+        path: ./artifacts
+        if_no_artifact_found: fail
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Display packages to publish
+      run: |
+        echo "=== NuGet Packages (.nupkg) ==="
+        ls -lh ./artifacts/*.nupkg
+        echo ""
+        echo "=== Symbol Packages (.snupkg) ==="
+        ls -lh ./artifacts/*.snupkg
+    
+    - name: Publish to NuGet.org
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        dotnet nuget push ./artifacts/*.nupkg \
+          --api-key $NUGET_API_KEY \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+    
+    - name: Publish Symbols to NuGet.org
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        dotnet nuget push ./artifacts/*.snupkg \
+          --api-key $NUGET_API_KEY \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+
+  publish-github-packages:
+    runs-on: ubuntu-latest
+    if: inputs.publish-to-github
+    permissions:
+      packages: write
+      contents: read
+    
+    steps:
+    - name: Download artifacts from build workflow
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: build-and-test.yml
+        run_number: ${{ inputs.run-number }}
+        name: nuget-package
+        path: ./artifacts
+        if_no_artifact_found: fail
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Display packages to publish
+      run: |
+        echo "=== NuGet Packages (.nupkg) ==="
+        ls -lh ./artifacts/*.nupkg
+    
+    - name: Publish to GitHub Packages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        dotnet nuget push ./artifacts/*.nupkg \
+          --api-key $GITHUB_TOKEN \
+          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          --skip-duplicate
