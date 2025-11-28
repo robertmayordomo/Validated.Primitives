@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+    <!-- NuGet Package Metadata -->
+    <PackageId>Validated.Primitives</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Robert Butler</Authors>
+    <Company>Major Domo Softare</Company>
+    <Product>Validated Primitives</Product>
+    <Description>A .NET library that provides strongly-typed, self-validating primitive value objects to eliminate primitive obsession and enforce domain constraints at compile-time.</Description>
+    <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/yourusername/validated-primitives</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yourusername/validated-primitives</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>validation;value-objects;ddd;domain-driven-design;primitives;email;phone;url;dates</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Initial release with support for EmailAddress, PhoneNumber, WebsiteUrl, IpAddress, DateOfBirth, FutureDate, BetweenDatesSelection, DateRange, DateOnlyRange, and TimeOnlyRange validated primitives.</PackageReleaseNotes>
+    
+    <!-- Build Output Configuration -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    
+    <!-- Source Link for debugging -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+</Project>
