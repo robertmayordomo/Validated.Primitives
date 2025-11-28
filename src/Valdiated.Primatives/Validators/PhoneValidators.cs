@@ -88,7 +88,7 @@ public static partial class PhoneValidators
 
     // United States: +1-XXX-XXX-XXXX or (XXX) XXX-XXXX or XXX-XXX-XXXX
     [GeneratedRegex(
-        @"^(\+1[-\s]?)?(\(?\d{3}\)?[-\s]?)?\d{3}[-\s]?\d{4}$",
+        @"^(\+?1[-\s]?)?(\(?\d{3}\)?[-\s]?)?\d{3}[-\s]?\d{4}$",
         RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 100)]
     private static partial Regex UsPhoneRegex();
@@ -102,7 +102,7 @@ public static partial class PhoneValidators
 
     // Canada: Same as US
     [GeneratedRegex(
-        @"^(\+1[-\s]?)?(\(?\d{3}\)?[-\s]?)?\d{3}[-\s]?\d{4}$",
+        @"^(\+?1[-\s]?)?(\(?\d{3}\)?[-\s]?)?\d{3}[-\s]?\d{4}$",
         RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 100)]
     private static partial Regex CanadaPhoneRegex();
@@ -302,13 +302,4 @@ public static partial class PhoneValidators
         RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 100)]
     private static partial Regex RussiaPhoneRegex();
-
-    [Obsolete("Use ValidFormat and ValidateCountryFormat instead. This method will be removed in a future version.")]
-    public static ValueValidator<string> PhoneNumber(string fieldName = "PhoneNumber")
-        => value =>
-        {
-            return !PhoneNumberRegex().IsMatch(value ?? string.Empty)
-                ? ValidationResult.Failure("Invalid phone number format.", fieldName, "PhoneNumber")
-                : ValidationResult.Success();
-        };
 }

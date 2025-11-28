@@ -115,21 +115,21 @@ public sealed record PersonName
         // Validate first name
         if (string.IsNullOrWhiteSpace(trimmedFirstName))
         {
-            result.AddError("FirstName", "First name is required and cannot be empty.", "Required");
+            result.AddError("First name is required and cannot be empty.", "FirstName", "Required");
         }
         else if (trimmedFirstName.Length < 1 || trimmedFirstName.Length > 50)
         {
-            result.AddError("FirstName", "First name must be between 1 and 50 characters.", "Length");
+            result.AddError("First name must be between 1 and 50 characters.", "FirstName", "Length");
         }
 
         // Validate last name
         if (string.IsNullOrWhiteSpace(trimmedLastName))
         {
-            result.AddError("LastName", "Last name is required and cannot be empty.", "Required");
+            result.AddError("Last name is required and cannot be empty.", "LastName", "Required");
         }
         else if (trimmedLastName.Length < 1 || trimmedLastName.Length > 50)
         {
-            result.AddError("LastName", "Last name must be between 1 and 50 characters.", "Length");
+            result.AddError("Last name must be between 1 and 50 characters.", "LastName", "Length");
         }
 
         // Validate middle name if provided
@@ -137,7 +137,7 @@ public sealed record PersonName
         {
             if (trimmedMiddleName.Length > 50)
             {
-                result.AddError("MiddleName", "Middle name cannot exceed 50 characters.", "MaxLength");
+                result.AddError("Middle name cannot exceed 50 characters.", "MiddleName", "MaxLength");
             }
         }
         else

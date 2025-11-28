@@ -62,7 +62,7 @@ public class PersonNameTests
     [Fact]
     public void TryCreate_Returns_Failure_When_FirstName_Exceeds_MaxLength()
     {
-        var longFirstName = new string('a', 51);
+        var longFirstName = "Johnathon" + new string('a', 42);
         var (result, name) = PersonName.TryCreate(longFirstName, "Doe");
 
         result.IsValid.ShouldBeFalse("Result should be invalid when first name exceeds 50 characters");
@@ -73,7 +73,7 @@ public class PersonNameTests
     [Fact]
     public void TryCreate_Returns_Failure_When_LastName_Exceeds_MaxLength()
     {
-        var longLastName = new string('b', 51);
+        var longLastName = "Doolittle" + new string('e', 42);
         var (result, name) = PersonName.TryCreate("John", longLastName);
 
         result.IsValid.ShouldBeFalse("Result should be invalid when last name exceeds 50 characters");
@@ -84,7 +84,7 @@ public class PersonNameTests
     [Fact]
     public void TryCreate_Returns_Failure_When_MiddleName_Exceeds_MaxLength()
     {
-        var longMiddleName = new string('c', 51);
+        var longMiddleName = "Christopher" + new string('r', 40);
         var (result, name) = PersonName.TryCreate("John", "Doe", longMiddleName);
 
         result.IsValid.ShouldBeFalse("Result should be invalid when middle name exceeds 50 characters");
