@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/rbmayordomo/validated-primitives</PackageProjectUrl>
     <RepositoryUrl>https://github.com/rbmayordomo/validated-primitives</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>validation;value-objects;ddd;domain-driven-design;primitives;email;phone;url;dates</PackageTags>
+    <PackageTags>validation;value-objects;ddd;domain-driven-design;primitives;strongly-typed;email-validation;phone-validation;postal-code;domain-validation;self-validating;primitive-obsession;type-safety;immutable;datetime-validation;url-validation;ip-validation;csharp;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
