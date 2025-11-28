@@ -12,7 +12,9 @@ echo ""
 
 # Configuration
 PROJECT_PATH="src/Valdiated.Primatives/Validated.Primitives.csproj"
+DOMAIN_PROJECT_PATH="src/Validated.Primitives.Domain/Validated.Primitives.Domain.csproj"
 TEST_PROJECT_PATH="tests/Valdiated.Primatives.Tests/Validated.Primitives.Tests.csproj"
+DOMAIN_TEST_PROJECT_PATH="tests/Validated.Primitives.Domain.Tests/Validated.Primitives.Domain.Tests.csproj"
 OUTPUT_DIR="./artifacts"
 
 # Calculate version (same as workflow)
@@ -52,8 +54,16 @@ dotnet test --configuration Release \
   --logger "console;verbosity=detailed"
 
 # Pack
-echo "?? Creating NuGet package..."
+echo "?? Creating NuGet packages..."
 dotnet pack "$PROJECT_PATH" \
+  --configuration Release \
+  --no-build \
+  --output "$OUTPUT_DIR" \
+  /p:Version="$VERSION" \
+  /p:PackageVersion="$VERSION" \
+  /p:CI=true
+
+dotnet pack "$DOMAIN_PROJECT_PATH" \
   --configuration Release \
   --no-build \
   --output "$OUTPUT_DIR" \

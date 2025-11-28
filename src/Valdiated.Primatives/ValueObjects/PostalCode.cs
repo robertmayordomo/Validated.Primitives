@@ -66,4 +66,22 @@ public sealed record PostalCode : ValidatedValueObject<string>
     /// Returns the postal code value as a string.
     /// </summary>
     public override string ToString() => Value;
+
+    /// <summary>
+    /// Determines whether the specified PostalCode is equal to the current PostalCode.
+    /// </summary>
+    public bool Equals(PostalCode? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Value == other.Value && CountryCode == other.CountryCode;
+    }
+
+    /// <summary>
+    /// Returns the hash code for this PostalCode.
+    /// </summary>
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Value, CountryCode);
+    }
 }

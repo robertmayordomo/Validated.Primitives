@@ -12,7 +12,9 @@ on:
 env:
   DOTNET_VERSION: '8.0.x'
   PROJECT_PATH: 'src/Valdiated.Primatives/Validated.Primitives.csproj'
+  DOMAIN_PROJECT_PATH: 'src/Validated.Primitives.Domain/Validated.Primitives.Domain.csproj'
   TEST_PROJECT_PATH: 'tests/Valdiated.Primatives.Tests/Validated.Primitives.Tests.csproj'
+  DOMAIN_TEST_PROJECT_PATH: 'tests/Validated.Primitives.Domain.Tests/Validated.Primitives.Domain.Tests.csproj'
 
 jobs:
   build-and-test:
@@ -90,6 +92,17 @@ jobs:
       if: github.event_name != 'pull_request'
       run: |
         dotnet pack ${{ env.PROJECT_PATH }} \
+          --configuration Release \
+          --no-build \
+          --output ./artifacts \
+          /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }} \
+          /p:Version=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
+          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
+          /p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }} \
+          /p:CI=true
+        
+        dotnet pack ${{ env.DOMAIN_PROJECT_PATH }} \
           --configuration Release \
           --no-build \
           --output ./artifacts \

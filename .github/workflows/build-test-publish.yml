@@ -12,7 +12,9 @@ on:
 env:
   DOTNET_VERSION: '8.0.x'
   PROJECT_PATH: 'src/Valdiated.Primatives/Validated.Primitives.csproj'
+  DOMAIN_PROJECT_PATH: 'src/Validated.Primitives.Domain/Validated.Primitives.Domain.csproj'
   TEST_PROJECT_PATH: 'tests/Valdiated.Primatives.Tests/Validated.Primitives.Tests.csproj'
+  DOMAIN_TEST_PROJECT_PATH: 'tests/Validated.Primitives.Domain.Tests/Validated.Primitives.Domain.Tests.csproj'
 
 jobs:
   build-and-test:
@@ -89,7 +91,15 @@ jobs:
           /p:Version=${{ steps.version.outputs.VERSION }} \
           /p:PackageVersion=${{ steps.version.outputs.VERSION }} \
           /p:CI=true
-    
+        
+        dotnet pack ${{ env.DOMAIN_PROJECT_PATH }} \
+          --configuration Release \
+          --no-build \
+          --output ./artifacts \
+          /p:Version=${{ steps.version.outputs.VERSION }} \
+          /p:PackageVersion=${{ steps.version.outputs.VERSION }} \
+          /p:CI=true
+
     - name: Upload NuGet Package Artifact
       if: github.event_name != 'pull_request'
       uses: actions/upload-artifact@v4

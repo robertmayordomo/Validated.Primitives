@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+    <!-- NuGet Package Metadata -->
+    <PackageId>Validated.Primitives.Domain</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Robert Butler</Authors>
+    <Company>Major Domo Softare</Company>
+    <Product>Validated Primitives Domain</Product>
+    <Description>Domain models and complex types built from Validated.Primitives value objects. Provides strongly-typed, self-validating domain entities for common use cases like Address, ContactInformation, and PersonName.</Description>
+    <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/rbmayordomo/validated-primitives</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rbmayordomo/validated-primitives</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>validation;value-objects;ddd;domain-driven-design;domain-models;aggregates;composites;address;contact-information;strongly-typed;self-validating;type-safety;immutable;csharp;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Initial release with Address, ContactInformation, and PersonName domain types.</PackageReleaseNotes>
+    
+    <!-- Build Output Configuration -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    
+    <!-- Source Link for debugging -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Valdiated.Primatives\Validated.Primitives.csproj" />
+  </ItemGroup>
+</Project>

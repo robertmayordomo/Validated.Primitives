@@ -10,7 +10,9 @@ Write-Host ""
 
 # Configuration
 $ProjectPath = "src\Valdiated.Primatives\Validated.Primitives.csproj"
+$DomainProjectPath = "src\Validated.Primitives.Domain\Validated.Primitives.Domain.csproj"
 $TestProjectPath = "tests\Valdiated.Primatives.Tests\Validated.Primitives.Tests.csproj"
+$DomainTestProjectPath = "tests\Validated.Primitives.Domain.Tests\Validated.Primitives.Domain.Tests.csproj"
 $OutputDir = ".\artifacts"
 
 # Calculate version (same as workflow)
@@ -54,8 +56,16 @@ dotnet test --configuration Release `
   --logger "console;verbosity=detailed"
 
 # Pack
-Write-Host "?? Creating NuGet package..." -ForegroundColor Yellow
+Write-Host "?? Creating NuGet packages..." -ForegroundColor Yellow
 dotnet pack $ProjectPath `
+  --configuration Release `
+  --no-build `
+  --output $OutputDir `
+  /p:Version="$Version" `
+  /p:PackageVersion="$Version" `
+  /p:CI=true
+
+dotnet pack $DomainProjectPath `
   --configuration Release `
   --no-build `
   --output $OutputDir `
