@@ -1,0 +1,38 @@
+namespace Validated.Primitives.ValueObjects;
+
+public enum CountryCode
+{
+    Unknown = 0,
+    All,
+    UnitedStates,
+    UnitedKingdom,
+    Canada,
+    Australia,
+    Germany,
+    France,
+    Italy,
+    Spain,
+    Netherlands,
+    Belgium,
+    Switzerland,
+    Austria,
+    Sweden,
+    Norway,
+    Denmark,
+    Finland,
+    Poland,
+    CzechRepublic,
+    Hungary,
+    Portugal,
+    Ireland,
+    Japan,
+    China,
+    India,
+    Brazil,
+    Mexico,
+    SouthAfrica,
+    NewZealand,
+    Singapore,
+    SouthKorea,
+    Russia
+}

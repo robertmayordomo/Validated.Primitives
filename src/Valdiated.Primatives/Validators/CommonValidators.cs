@@ -13,4 +13,24 @@ public static class CommonValidators
         => value => value != null && value.Length > maxLength
             ? ValidationResult.Failure($"{fieldName} must be at most {maxLength} characters.", fieldName, "MaxLength")
             : ValidationResult.Success();
+
+    public static ValueValidator<string> MinLength(string fieldName, int minLength)
+        => value => value != null && value.Length < minLength
+            ? ValidationResult.Failure($"{fieldName} must be at least {minLength} characters.", fieldName, "MinLength")
+            : ValidationResult.Success();
+
+    public static ValueValidator<string> Length(string fieldName, int minLength, int maxLength)
+        => value =>
+        {
+            if (value == null)
+                return ValidationResult.Success();
+
+            if (value.Length < minLength)
+                return ValidationResult.Failure($"{fieldName} must be at least {minLength} characters.", fieldName, "MinLength");
+
+            if (value.Length > maxLength)
+                return ValidationResult.Failure($"{fieldName} must be at most {maxLength} characters.", fieldName, "MaxLength");
+
+            return ValidationResult.Success();
+        };
 }

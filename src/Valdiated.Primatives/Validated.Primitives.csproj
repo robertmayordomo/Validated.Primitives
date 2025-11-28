@@ -20,7 +20,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Initial release with support for EmailAddress, PhoneNumber, WebsiteUrl, IpAddress, DateOfBirth, FutureDate, BetweenDatesSelection, DateRange, DateOnlyRange, and TimeOnlyRange validated primitives.</PackageReleaseNotes>
+    <PackageReleaseNotes>Initial release with support for EmailAddress, PhoneNumber, WebsiteUrl, IpAddress, DateOfBirth, FutureDate, BetweenDatesSelection, DateRange, DateOnlyRange, TimeOnlyRange, and PostalCode validated primitives.</PackageReleaseNotes>
     
     <!-- Build Output Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

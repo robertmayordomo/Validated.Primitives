@@ -15,6 +15,7 @@ public class User
     public string Email { get; set; }           // Could be null, empty, or invalid
     public string PhoneNumber { get; set; }     // No format validation
     public DateTime DateOfBirth { get; set; }   // Could be in the future!
+    public string PostalCode { get; set; }      // No country-specific validation
 }
 
 // Validation logic scattered everywhere
@@ -33,6 +34,7 @@ public class User
     public EmailAddress Email { get; set; }       // Always valid or null
     public PhoneNumber PhoneNumber { get; set; }  // Always properly formatted
     public DateOfBirth DateOfBirth { get; set; }  // Always in the past
+    public PostalCode PostalCode { get; set; }    // Country-specific validation
 }
 
 // Validation happens at creation - guaranteed valid everywhere else
@@ -70,6 +72,9 @@ dotnet add package Validated.Primitives
 - **`PhoneNumber`** - Valid phone number format
 - **`WebsiteUrl`** - Valid HTTP/HTTPS URLs
 
+### Location
+- **`PostalCode`** - Country-specific postal code validation for 30+ countries
+
 ### Network
 - **`IpAddress`** - Valid IPv4 or IPv6 addresses
 
@@ -106,6 +111,52 @@ else
 }
 ```
 
+### Postal Codes with Country Validation
+
+```csharp
+using Validated.Primitives.ValueObjects;
+
+// Validate a US ZIP code
+var (result, usZip) = PostalCode.TryCreate(CountryCode.UnitedStates, "12345");
+if (result.IsValid)
+{
+    Console.WriteLine($"Valid US ZIP: {usZip.Value}");
+    Console.WriteLine($"Country: {usZip.GetCountryName()}"); // "United States"
+}
+
+// Validate a UK postal code
+var (result2, ukCode) = PostalCode.TryCreate(CountryCode.UnitedKingdom, "SW1A 1AA");
+if (result2.IsValid)
+{
+    Console.WriteLine($"Valid UK postcode: {ukCode.Value}");
+}
+
+// Accept any format with Unknown or All
+var (result3, genericCode) = PostalCode.TryCreate(CountryCode.All, "XYZ-123");
+if (result3.IsValid)
+{
+    Console.WriteLine($"Generic postal code: {genericCode.Value}");
+}
+
+// Country-specific validation will fail for wrong formats
+var (result4, invalid) = PostalCode.TryCreate(CountryCode.UnitedStates, "ABCDE");
+if (!result4.IsValid)
+{
+    Console.WriteLine(result4.ToSingleMessage()); 
+    // "PostalCode is not a valid postal code format for UnitedStates."
+}
+```
+
+**Supported Countries** (30+):
+- United States, United Kingdom, Canada, Australia
+- Germany, France, Italy, Spain, Netherlands, Belgium, Switzerland, Austria
+- Sweden, Norway, Denmark, Finland, Poland, Czech Republic, Hungary, Portugal, Ireland
+- Japan, China, India, Brazil, Mexico, South Africa, New Zealand, Singapore, South Korea, Russia
+
+**Special Country Codes**:
+- `CountryCode.Unknown` - Accepts any postal code format (basic validation only)
+- `CountryCode.All` - Accepts any postal code format (basic validation only)
+
 ### Handling Validation Errors
 
 ```csharp
@@ -137,12 +188,15 @@ public class Customer
     public EmailAddress Email { get; init; }
     public PhoneNumber Phone { get; init; }
     public DateOfBirth BirthDate { get; init; }
+    public PostalCode PostalCode { get; init; }
     public WebsiteUrl? Website { get; init; }
     
     public static (ValidationResult, Customer?) Create(
         string email,
         string phone,
         DateTime birthDate,
+        CountryCode country,
+        string postalCode,
         string? website = null)
     {
         var validationResult = ValidationResult.Success();
@@ -155,6 +209,9 @@ public class Customer
         
         var (birthResult, birthValue) = DateOfBirth.TryCreate(birthDate);
         validationResult.Merge(birthResult);
+        
+        var (postalResult, postalValue) = PostalCode.TryCreate(country, postalCode);
+        validationResult.Merge(postalResult);
         
         WebsiteUrl? websiteValue = null;
         if (!string.IsNullOrWhiteSpace(website))
@@ -173,6 +230,7 @@ public class Customer
             Email = emailValue!,
             Phone = phoneValue!,
             BirthDate = birthValue!,
+            PostalCode = postalValue!,
             Website = websiteValue
         };
         
@@ -185,6 +243,8 @@ var (result, customer) = Customer.Create(
     "john.doe@example.com",
     "+1-555-123-4567",
     new DateTime(1990, 5, 15),
+    CountryCode.UnitedStates,
+    "12345",
     "https://johndoe.com"
 );
 
@@ -236,6 +296,13 @@ if (!result.IsValid)
     // Output: "CustomerEmail: Invalid email format"
     Console.WriteLine(result.ToSingleMessage());
 }
+
+// Also works with postal codes
+var (result2, postalCode) = PostalCode.TryCreate(
+    CountryCode.UnitedStates, 
+    input, 
+    "ShippingPostalCode"
+);
 ```
 
 ### API Integration Example
@@ -260,11 +327,22 @@ public class UsersController : ControllerBase
             return BadRequest(phoneResult.ToDictionary());
         }
         
+        var (postalResult, postalCode) = PostalCode.TryCreate(
+            request.CountryCode, 
+            request.PostalCode, 
+            nameof(request.PostalCode)
+        );
+        if (!postalResult.IsValid)
+        {
+            return BadRequest(postalResult.ToDictionary());
+        }
+        
         // Create user with validated primitives
         var user = new User
         {
             Email = email,
-            Phone = phone
+            Phone = phone,
+            PostalCode = postalCode
         };
         
         // Save user...
@@ -283,23 +361,23 @@ using Validated.Primitives.Core;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
-public sealed record PostalCode : ValidatedValueObject<string>
+public sealed record TaxId : ValidatedValueObject<string>
 {
-    private PostalCode(string value, string propertyName = "PostalCode") 
+    private TaxId(string value, string propertyName = "TaxId") 
         : base(value)
     {
         Validators.Add(CommonValidators.NotNullOrWhitespace(propertyName));
-        Validators.Add(CommonValidators.Length(propertyName, 5, 10));
+        Validators.Add(CommonValidators.Length(propertyName, 9, 11));
         // Add your custom validation logic
     }
 
-    public static (ValidationResult Result, PostalCode? Value) TryCreate(
+    public static (ValidationResult Result, TaxId? Value) TryCreate(
         string value, 
-        string propertyName = "PostalCode")
+        string propertyName = "TaxId")
     {
-        var postalCode = new PostalCode(value, propertyName);
-        var validationResult = postalCode.Validate();
-        var result = validationResult.IsValid ? postalCode : null;
+        var taxId = new TaxId(value, propertyName);
+        var validationResult = taxId.Validate();
+        var result = validationResult.IsValid ? taxId : null;
         return (validationResult, result);
     }
 }
@@ -333,6 +411,10 @@ The library includes several validator helpers:
 ### IpValidators
 - `ValidIpAddress` - Valid IPv4 or IPv6 address
 
+### PostalCodeValidators
+- `ValidFormat` - Basic postal code format (alphanumeric, spaces, hyphens)
+- `ValidateCountryFormat` - Country-specific postal code validation
+
 
 ## Design Principles
 
@@ -353,7 +435,7 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 ## License
 
-[Add your license here]
+MIT
 
 ## Resources
 
