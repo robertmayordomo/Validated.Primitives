@@ -33,6 +33,7 @@ public sealed record PostalCode : ValidatedValueObject<string>
     /// <summary>
     /// Attempts to create a PostalCode instance with validation and automatic country detection.
     /// </summary>
+    /// <param name="countryCode">the country code , needed to validate the postcode.</param>
     /// <param name="value">The postal code string to validate.</param>
     /// <param name="propertyName">The property name for error messages.</param>
     /// <returns>A tuple containing the validation result and the PostalCode instance if valid.</returns>
