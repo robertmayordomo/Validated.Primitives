@@ -433,12 +433,13 @@ public class TimeOnlyRangeTests
     [Fact]
     public void UntilNow_Creates_Range_From_Past_Time_To_Now()
     {
-        var from = new TimeOnly(9, 0, 0);
+        // Use TimeOnly.MinValue to ensure 'from' is always before 'to' regardless of current time
+        var from = TimeOnly.MinValue;
         var beforeCreate = TimeOnly.FromDateTime(DateTime.Now);
         var (result, range) = from.UntilNow();
         var afterCreate = TimeOnly.FromDateTime(DateTime.Now);
 
-        result.IsValid.ShouldBeTrue("Result should be valid when creating range from past to now");
+        result.IsValid.ShouldBeTrue($"Result should be valid when creating range from past to now: {result.ToSingleMessage()}");
         range.ShouldNotBeNull("Range should not be null when validation succeeds");
         range!.From.ShouldBe(from, "From should be the specified time");
         range.To.ShouldBeGreaterThanOrEqualTo(beforeCreate, "To should be at or after the time when method was called");
@@ -450,7 +451,8 @@ public class TimeOnlyRangeTests
     [Fact]
     public void UntilNow_Respects_Inclusive_Parameters()
     {
-        var from = new TimeOnly(9, 0, 0);
+        // Use TimeOnly.MinValue to ensure 'from' is always before 'to' regardless of current time
+        var from = TimeOnly.MinValue;
         var (result, range) = from.UntilNow(inclusiveStart: false, inclusiveEnd: false);
 
         result.IsValid.ShouldBeTrue("Result should be valid when creating range from past to now");
@@ -462,7 +464,8 @@ public class TimeOnlyRangeTests
     [Fact]
     public void UntilNow_Contains_Current_Time()
     {
-        var from = new TimeOnly(0, 0, 0);
+        // Use TimeOnly.MinValue to ensure 'from' is always before 'to' regardless of current time
+        var from = TimeOnly.MinValue;
         var (result, range) = from.UntilNow();
 
         result.IsValid.ShouldBeTrue("Result should be valid when creating range from midnight to now");
@@ -474,7 +477,8 @@ public class TimeOnlyRangeTests
     [Fact]
     public void FromNowUntil_Creates_Range_From_Now_To_Future_Time()
     {
-        var to = new TimeOnly(23, 59, 59);
+        // Use TimeOnly.MaxValue to ensure 'to' is always after 'from' regardless of current time
+        var to = TimeOnly.MaxValue;
         var beforeCreate = TimeOnly.FromDateTime(DateTime.Now);
         var (result, range) = to.FromNowUntil();
         var afterCreate = TimeOnly.FromDateTime(DateTime.Now);
@@ -491,7 +495,8 @@ public class TimeOnlyRangeTests
     [Fact]
     public void FromNowUntil_Respects_Inclusive_Parameters()
     {
-        var to = new TimeOnly(23, 59, 59);
+        // Use TimeOnly.MaxValue to ensure 'to' is always after 'from' regardless of current time
+        var to = TimeOnly.MaxValue;
         var (result, range) = to.FromNowUntil(inclusiveStart: false, inclusiveEnd: false);
 
         result.IsValid.ShouldBeTrue("Result should be valid when creating range from now to future");
@@ -503,7 +508,8 @@ public class TimeOnlyRangeTests
     [Fact]
     public void FromNowUntil_Contains_Current_Time()
     {
-        var to = new TimeOnly(23, 59, 59);
+        // Use TimeOnly.MaxValue to ensure 'to' is always after 'from' regardless of current time
+        var to = TimeOnly.MaxValue;
         var (result, range) = to.FromNowUntil();
 
         result.IsValid.ShouldBeTrue("Result should be valid when creating range from now to end of day");
