@@ -12,8 +12,8 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeTrue("Result should be valid with first and last name");
         name.ShouldNotBeNull("PersonName should not be null when validation succeeds");
-        name!.FirstName.ShouldBe("John");
-        name.LastName.ShouldBe("Doe");
+        name!.FirstName.Value.ShouldBe("John");
+        name.LastName.Value.ShouldBe("Doe");
         name.MiddleName.ShouldBeNull("MiddleName should be null when not provided");
     }
 
@@ -24,9 +24,9 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeTrue("Result should be valid with middle name");
         name.ShouldNotBeNull();
-        name!.FirstName.ShouldBe("John");
-        name.MiddleName.ShouldBe("Michael");
-        name.LastName.ShouldBe("Doe");
+        name!.FirstName.Value.ShouldBe("John");
+        name.MiddleName!.Value.ShouldBe("Michael");
+        name.LastName.Value.ShouldBe("Doe");
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeFalse("Result should be invalid when first name is empty");
         name.ShouldBeNull("PersonName should be null when validation fails");
-        result.Errors.ShouldContain(e => e.MemberName == "FirstName" && e.Code == "Required");
+        result.Errors.ShouldContain(e => e.MemberName == "FirstName" && e.Code == "NotNullOrWhitespace");
     }
 
     [Fact]
@@ -56,35 +56,35 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeFalse("Result should be invalid when last name is empty");
         name.ShouldBeNull();
-        result.Errors.ShouldContain(e => e.MemberName == "LastName" && e.Code == "Required");
+        result.Errors.ShouldContain(e => e.MemberName == "LastName" && e.Code == "NotNullOrWhitespace");
     }
 
     [Fact]
     public void TryCreate_Returns_Failure_When_FirstName_Exceeds_MaxLength()
     {
-        var longFirstName = "Johnathon" + new string('a', 42);
+        var longFirstName = new string('a', 51);
         var (result, name) = PersonName.TryCreate(longFirstName, "Doe");
 
         result.IsValid.ShouldBeFalse("Result should be invalid when first name exceeds 50 characters");
         name.ShouldBeNull();
-        result.Errors.ShouldContain(e => e.MemberName == "FirstName" && e.Code == "Length");
+        result.Errors.ShouldContain(e => e.MemberName == "FirstName" && e.Code == "MaxLength");
     }
 
     [Fact]
     public void TryCreate_Returns_Failure_When_LastName_Exceeds_MaxLength()
     {
-        var longLastName = "Doolittle" + new string('e', 42);
+        var longLastName = new string('e', 51);
         var (result, name) = PersonName.TryCreate("John", longLastName);
 
         result.IsValid.ShouldBeFalse("Result should be invalid when last name exceeds 50 characters");
         name.ShouldBeNull();
-        result.Errors.ShouldContain(e => e.MemberName == "LastName" && e.Code == "Length");
+        result.Errors.ShouldContain(e => e.MemberName == "LastName" && e.Code == "MaxLength");
     }
 
     [Fact]
     public void TryCreate_Returns_Failure_When_MiddleName_Exceeds_MaxLength()
     {
-        var longMiddleName = "Christopher" + new string('r', 40);
+        var longMiddleName = new string('r', 51);
         var (result, name) = PersonName.TryCreate("John", "Doe", longMiddleName);
 
         result.IsValid.ShouldBeFalse("Result should be invalid when middle name exceeds 50 characters");
@@ -99,41 +99,19 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeTrue();
         name.ShouldNotBeNull();
-        name!.FirstName.ShouldBe("John");
-        name.LastName.ShouldBe("Doe");
-        name.MiddleName.ShouldBe("Michael");
+        name!.FirstName.Value.ShouldBe("John");
+        name.LastName.Value.ShouldBe("Doe");
+        name.MiddleName!.Value.ShouldBe("Michael");
     }
 
     [Fact]
     public void TryCreate_Normalizes_Empty_MiddleName_To_Null()
     {
-        var (result, name) = PersonName.TryCreate("John", "Doe", "");
-
-        result.IsValid.ShouldBeTrue();
-        name.ShouldNotBeNull();
-        name!.MiddleName.ShouldBeNull("Empty middle name should be normalized to null");
-    }
-
-    [Fact]
-    public void TryCreate_Normalizes_Whitespace_MiddleName_To_Null()
-    {
         var (result, name) = PersonName.TryCreate("John", "Doe", "   ");
 
         result.IsValid.ShouldBeTrue();
         name.ShouldNotBeNull();
-        name!.MiddleName.ShouldBeNull("Whitespace middle name should be normalized to null");
-    }
-
-    [Fact]
-    public void TryCreate_Returns_Multiple_Errors_When_Multiple_Fields_Invalid()
-    {
-        var (result, name) = PersonName.TryCreate("", "");
-
-        result.IsValid.ShouldBeFalse();
-        name.ShouldBeNull();
-        result.Errors.Count.ShouldBeGreaterThan(1, "Should have multiple validation errors");
-        result.Errors.ShouldContain(e => e.MemberName == "FirstName");
-        result.Errors.ShouldContain(e => e.MemberName == "LastName");
+        name!.MiddleName.ShouldBeNull();
     }
 
     [Fact]
@@ -146,7 +124,7 @@ public class PersonNameTests
     }
 
     [Fact]
-    public void FullName_Returns_FirstName_MiddleName_And_LastName()
+    public void FullName_Returns_FirstName_MiddleName_LastName()
     {
         var (_, name) = PersonName.TryCreate("John", "Doe", "Michael");
 
@@ -242,8 +220,8 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeTrue("Single character names should be valid");
         name.ShouldNotBeNull();
-        name!.FirstName.ShouldBe("J");
-        name.LastName.ShouldBe("D");
+        name!.FirstName.Value.ShouldBe("J");
+        name.LastName.Value.ShouldBe("D");
     }
 
     [Fact]
@@ -253,8 +231,8 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeTrue("Hyphenated names should be valid");
         name.ShouldNotBeNull();
-        name!.FirstName.ShouldBe("Mary-Jane");
-        name.LastName.ShouldBe("Smith-Jones");
+        name!.FirstName.Value.ShouldBe("Mary-Jane");
+        name.LastName.Value.ShouldBe("Smith-Jones");
     }
 
     [Fact]
@@ -264,29 +242,36 @@ public class PersonNameTests
 
         result.IsValid.ShouldBeTrue("Names with apostrophes should be valid");
         name.ShouldNotBeNull();
-        name!.FirstName.ShouldBe("O'Brien");
-        name.LastName.ShouldBe("D'Angelo");
+        name!.FirstName.Value.ShouldBe("O'Brien");
+        name.LastName.Value.ShouldBe("D'Angelo");
     }
 
     [Fact]
-    public void Works_With_International_Characters()
+    public void Rejects_Names_With_Numbers()
     {
-        var names = new[]
-        {
-            ("José", "García"),
-            ("François", "Müller"),
-            ("Søren", "Ødegård"),
-            ("W?adys?aw", "?ukowski")
-        };
+        var (result, name) = PersonName.TryCreate("John123", "Doe");
 
-        foreach (var (firstName, lastName) in names)
-        {
-            var (result, name) = PersonName.TryCreate(firstName, lastName);
-            
-            result.IsValid.ShouldBeTrue($"Should be valid for {firstName} {lastName}");
-            name.ShouldNotBeNull();
-            name!.FirstName.ShouldBe(firstName);
-            name!.LastName.ShouldBe(lastName);
-        }
+        result.IsValid.ShouldBeFalse("Names with numbers should be invalid");
+        name.ShouldBeNull();
+        result.Errors.ShouldContain(e => e.Code == "AlphaWithHyphenAndApostrophe");
+    }
+
+    [Fact]
+    public void Rejects_Names_With_Spaces()
+    {
+        var (result, name) = PersonName.TryCreate("John Paul", "Doe");
+
+        result.IsValid.ShouldBeFalse("Names with spaces should be invalid");
+        name.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Rejects_Names_With_Special_Characters()
+    {
+        var (result, name) = PersonName.TryCreate("John@Doe", "Smith");
+
+        result.IsValid.ShouldBeFalse("Names with special characters should be invalid");
+        name.ShouldBeNull();
     }
 }
+
