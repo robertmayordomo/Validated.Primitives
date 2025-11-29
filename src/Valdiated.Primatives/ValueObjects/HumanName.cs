@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
@@ -9,6 +11,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Must be non-empty, contain only alphabetic characters, hyphens, and apostrophes,
 /// and be no more than 50 characters.
 /// </summary>
+[JsonConverter(typeof(HumanNameConverter))]
 public sealed record HumanName : ValidatedValueObject<string>
 {
     private HumanName(string value, string propertyName = "Name") : base(value?.Trim() ?? string.Empty)
@@ -33,9 +36,4 @@ public sealed record HumanName : ValidatedValueObject<string>
         var result = validationResult.IsValid ? humanName : null;
         return (validationResult, result);
     }
-
-    /// <summary>
-    /// Returns the name as a string.
-    /// </summary>
-    public override string ToString() => Value;
 }

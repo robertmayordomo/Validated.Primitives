@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
@@ -8,6 +10,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated phone number with country code support.
 /// Supports phone number formats from countries worldwide.
 /// </summary>
+[JsonConverter(typeof(PhoneNumberConverter))]
 public sealed record PhoneNumber : ValidatedValueObject<string>
 {
     /// <summary>

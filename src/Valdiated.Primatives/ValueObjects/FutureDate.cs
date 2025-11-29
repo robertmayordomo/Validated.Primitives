@@ -1,9 +1,12 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
 namespace Validated.Primitives.ValueObjects;
 
+[JsonConverter(typeof(FutureDateConverter))]
 public sealed record FutureDate : ValidatedValueObject<DateTime>
 {
     private FutureDate(DateTime value, string propertyName = "FutureDate") : base(value)

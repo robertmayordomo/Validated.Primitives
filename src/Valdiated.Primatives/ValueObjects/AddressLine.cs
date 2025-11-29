@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
@@ -8,6 +10,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated address line (street address, apartment number, etc.).
 /// Maximum length is 200 characters. Can be null or empty.
 /// </summary>
+[JsonConverter(typeof(AddressLineConverter))]
 public sealed record AddressLine : ValidatedValueObject<string>
 {
     private AddressLine(string value, string propertyName = "AddressLine") : base(value?.Trim() ?? string.Empty)

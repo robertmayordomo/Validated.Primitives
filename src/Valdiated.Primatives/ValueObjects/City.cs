@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
@@ -8,6 +10,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated city name.
 /// Required field with a maximum length of 100 characters.
 /// </summary>
+[JsonConverter(typeof(CityConverter))]
 public sealed record City : ValidatedValueObject<string>
 {
     private City(string value, string propertyName = "City") : base(value?.Trim() ?? string.Empty)

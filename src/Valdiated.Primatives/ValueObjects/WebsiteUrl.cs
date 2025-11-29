@@ -1,9 +1,12 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
 namespace Validated.Primitives.ValueObjects;
 
+[JsonConverter(typeof(WebsiteUrlConverter))]
 public sealed record WebsiteUrl : ValidatedValueObject<string>
 {
     private WebsiteUrl(string value, string propertyName = "Url") : base(value)

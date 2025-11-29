@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
@@ -8,6 +10,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated state or province name.
 /// Required field with a maximum length of 100 characters.
 /// </summary>
+[JsonConverter(typeof(StateProvinceConverter))]
 public sealed record StateProvince : ValidatedValueObject<string>
 {
     private StateProvince(string value, string propertyName = "StateProvince") : base(value?.Trim() ?? string.Empty)

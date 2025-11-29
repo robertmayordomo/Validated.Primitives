@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Validated.Primitives.Core;
+using Validated.Primitives.Serialization;
 using Validated.Primitives.Validation;
 using Validated.Primitives.Validators;
 
@@ -9,6 +11,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Supports postal code formats from countries worldwide and automatically
 /// identifies the country based on format patterns.
 /// </summary>
+[JsonConverter(typeof(PostalCodeConverter))]
 public sealed record PostalCode : ValidatedValueObject<string>
 {
     /// <summary>
