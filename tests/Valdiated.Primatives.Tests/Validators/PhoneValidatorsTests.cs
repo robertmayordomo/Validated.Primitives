@@ -7,8 +7,6 @@ namespace Validated.Primitives.Tests.Validators;
 
 public class PhoneValidatorsTests
 {
-    #region ValidFormat Tests
-
     public static TheoryData<string> ValidFormatPhones => new()
     {
         "+14155552671",
@@ -76,10 +74,6 @@ public class PhoneValidatorsTests
         result.Errors[0].MemberName.ShouldBe("ContactPhone");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - United States
-
     public static TheoryData<string> ValidUSPhones => new()
     {
         "+14155552671",
@@ -119,10 +113,6 @@ public class PhoneValidatorsTests
         result.Errors[0].Message.ShouldContain("UnitedStates");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - United Kingdom
-
     public static TheoryData<string> ValidUKPhones => new()
     {
         "+447911123456",    // 4 + 6 digits
@@ -155,10 +145,6 @@ public class PhoneValidatorsTests
         result.IsValid.ShouldBeFalse($"Expected invalid UK phone: {phone}");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - Canada
-
     public static TheoryData<string> ValidCanadaPhones => new()
     {
         "+14165551234",
@@ -178,10 +164,6 @@ public class PhoneValidatorsTests
         result.IsValid.ShouldBeTrue($"Expected valid Canada phone: {phone}");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - Australia
-
     public static TheoryData<string> ValidAustraliaPhones => new()
     {
         "+61412345678",
@@ -197,10 +179,6 @@ public class PhoneValidatorsTests
         var result = PhoneValidators.ValidateCountryFormat("Phone", CountryCode.Australia)(phone);
         result.IsValid.ShouldBeTrue($"Expected valid Australia phone: {phone}");
     }
-
-    #endregion
-
-    #region ValidateCountryFormat Tests - Germany
 
     public static TheoryData<string> ValidGermanyPhones => new()
     {
@@ -218,10 +196,6 @@ public class PhoneValidatorsTests
         result.IsValid.ShouldBeTrue($"Expected valid Germany phone: {phone}");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - France
-
     public static TheoryData<string> ValidFrancePhones => new()
     {
         "+33142868200",
@@ -237,10 +211,6 @@ public class PhoneValidatorsTests
         var result = PhoneValidators.ValidateCountryFormat("Phone", CountryCode.France)(phone);
         result.IsValid.ShouldBeTrue($"Expected valid France phone: {phone}");
     }
-
-    #endregion
-
-    #region ValidateCountryFormat Tests - Japan
 
     public static TheoryData<string> ValidJapanPhones => new()
     {
@@ -258,10 +228,6 @@ public class PhoneValidatorsTests
         result.IsValid.ShouldBeTrue($"Expected valid Japan phone: {phone}");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - China
-
     public static TheoryData<string> ValidChinaPhones => new()
     {
         "+8613912345678",
@@ -278,10 +244,6 @@ public class PhoneValidatorsTests
         result.IsValid.ShouldBeTrue($"Expected valid China phone: {phone}");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - India
-
     public static TheoryData<string> ValidIndiaPhones => new()
     {
         "+919876543210",
@@ -297,10 +259,6 @@ public class PhoneValidatorsTests
         var result = PhoneValidators.ValidateCountryFormat("Phone", CountryCode.India)(phone);
         result.IsValid.ShouldBeTrue($"Expected valid India phone: {phone}");
     }
-
-    #endregion
-
-    #region ValidateCountryFormat Tests - Brazil
 
     public static TheoryData<string> ValidBrazilPhones => new()
     {
@@ -319,10 +277,6 @@ public class PhoneValidatorsTests
         result.IsValid.ShouldBeTrue($"Expected valid Brazil phone: {phone}");
     }
 
-    #endregion
-
-    #region ValidateCountryFormat Tests - Mexico
-
     public static TheoryData<string> ValidMexicoPhones => new()
     {
         "+525512345678",
@@ -336,10 +290,6 @@ public class PhoneValidatorsTests
         var result = PhoneValidators.ValidateCountryFormat("Phone", CountryCode.Mexico)(phone);
         result.IsValid.ShouldBeTrue($"Expected valid Mexico phone: {phone}");
     }
-
-    #endregion
-
-    #region ValidateCountryFormat Tests - Special Cases
 
     [Theory]
     [InlineData(null)]
@@ -382,10 +332,6 @@ public class PhoneValidatorsTests
         result.Errors[0].Message.ShouldContain("Germany");
     }
 
-    #endregion
-
-    #region Additional Country Tests
-
     [Theory]
     [InlineData(CountryCode.Spain, "+34612345678")]
     [InlineData(CountryCode.Italy, "+393912345678")]
@@ -413,10 +359,6 @@ public class PhoneValidatorsTests
         result.IsValid.ShouldBeTrue($"Expected valid {countryCode} phone: {phone}");
     }
 
-    #endregion
-
-    #region Combined Validation Tests
-
     [Theory]
     [InlineData("+14155552671", CountryCode.UnitedStates)]
     [InlineData("+447911123456", CountryCode.UnitedKingdom)]
@@ -442,6 +384,4 @@ public class PhoneValidatorsTests
         formatResult.IsValid.ShouldBeTrue("Format validation should pass");
         countryResult.IsValid.ShouldBeFalse("Country validation should fail for wrong country");
     }
-
-    #endregion
 }
