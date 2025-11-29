@@ -36,4 +36,9 @@ public sealed record HumanName : ValidatedValueObject<string>
         var result = validationResult.IsValid ? humanName : null;
         return (validationResult, result);
     }
+
+    /// <summary>
+    /// Returns the name value as a string.
+    /// </summary>
+    public override string ToString() => Value;
 }
