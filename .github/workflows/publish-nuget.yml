@@ -35,26 +35,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Required for GitVersion
+        fetch-depth: 0  # Required for commit count
     
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v1
-      with:
-        versionSpec: '5.x'
-    
-    - name: Determine Version
-      id: gitversion
-      uses: gittools/actions/gitversion/execute@v1
-      with:
-        useConfigFile: true
-        configFilePath: GitVersion.yml
-    
-    - name: Display GitVersion outputs
+    - name: Calculate version from commit count
+      id: version
       run: |
-        echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
-        echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
-        echo "FullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}"
-        echo "InformationalVersion: ${{ steps.gitversion.outputs.informationalVersion }}"
+        COMMIT_COUNT=$(git rev-list --count HEAD)
+        VERSION="0.1.$COMMIT_COUNT"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+        echo "Calculated version: $VERSION (based on $COMMIT_COUNT commits)"
+    
+    - name: Display Version Information
+      run: |
+        echo "Version: ${{ steps.version.outputs.version }}"
+        echo "Commit Count: ${{ steps.version.outputs.commit_count }}"
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -67,10 +62,10 @@ jobs:
     - name: Build
       run: |
         dotnet build --configuration Release --no-restore \
-          /p:Version=${{ steps.gitversion.outputs.assemblySemVer }} \
-          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
-          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
-          /p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }} \
+          /p:Version=${{ steps.version.outputs.version }} \
+          /p:AssemblyVersion=${{ steps.version.outputs.version }} \
+          /p:FileVersion=${{ steps.version.outputs.version }} \
+          /p:InformationalVersion=${{ steps.version.outputs.version }} \
           /p:CI=true
     
     - name: Test
@@ -82,22 +77,22 @@ jobs:
           --configuration Release \
           --no-build \
           --output ./artifacts \
-          /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }} \
-          /p:Version=${{ steps.gitversion.outputs.assemblySemVer }} \
-          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
-          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
-          /p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }} \
+          /p:PackageVersion=${{ steps.version.outputs.version }} \
+          /p:Version=${{ steps.version.outputs.version }} \
+          /p:AssemblyVersion=${{ steps.version.outputs.version }} \
+          /p:FileVersion=${{ steps.version.outputs.version }} \
+          /p:InformationalVersion=${{ steps.version.outputs.version }} \
           /p:CI=true
         
         dotnet pack ${{ env.DOMAIN_PROJECT_PATH }} \
           --configuration Release \
           --no-build \
           --output ./artifacts \
-          /p:PackageVersion=${{ steps.gitversion.outputs.nuGetVersionV2 }} \
-          /p:Version=${{ steps.gitversion.outputs.assemblySemVer }} \
-          /p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
-          /p:FileVersion=${{ steps.gitversion.outputs.assemblySemFileVer }} \
-          /p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }} \
+          /p:PackageVersion=${{ steps.version.outputs.version }} \
+          /p:Version=${{ steps.version.outputs.version }} \
+          /p:AssemblyVersion=${{ steps.version.outputs.version }} \
+          /p:FileVersion=${{ steps.version.outputs.version }} \
+          /p:InformationalVersion=${{ steps.version.outputs.version }} \
           /p:CI=true
     
     - name: Display packages to publish
@@ -146,7 +141,7 @@ jobs:
     - name: Upload NuGet Package Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-packages-${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        name: nuget-packages-${{ steps.version.outputs.version }}
         path: ./artifacts/*.nupkg
         retention-days: 90
     
@@ -154,6 +149,6 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: symbol-packages-${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        name: symbol-packages-${{ steps.version.outputs.version }}
         path: ./artifacts/*.snupkg
         retention-days: 90

@@ -1,4 +1,7 @@
 mode: ContinuousDelivery
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatch
+next-version: 0.1.0
 branches:
   main:
     tag: ''
