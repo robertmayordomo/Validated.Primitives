@@ -1,5 +1,4 @@
 using Shouldly;
-using Validated.Primitives.Domain;
 using Validated.Primitives.ValueObjects;
 
 namespace Validated.Primitives.Domain.Tests;
