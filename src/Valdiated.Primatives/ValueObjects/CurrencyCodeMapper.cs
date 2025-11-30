@@ -1,4 +1,4 @@
-namespace Validated.Primitives.ValueObjects;
+ï»¿namespace Validated.Primitives.ValueObjects;
 
 /// <summary>
 /// Maps country codes to their corresponding ISO 4217 currency codes.
@@ -53,12 +53,12 @@ public static class CurrencyCodeMapper
     public static string GetCurrencySymbol(string currencyCode) => currencyCode switch
     {
         "USD" => "$",
-        "GBP" => "£",
-        "EUR" => "€",
-        "JPY" => "¥",
-        "CNY" => "¥",
-        "INR" => "?",
-        "RUB" => "?",
+        "GBP" => "Â£",
+        "EUR" => "â‚¬",
+        "JPY" => "Â¥",
+        "CNY" => "Â¥",
+        "INR" => "â‚¹",
+        "RUB" => "â‚½",
         "KRW" => "?",
         "CHF" => "CHF",
         "CAD" => "C$",
