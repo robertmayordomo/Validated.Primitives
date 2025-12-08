@@ -43,7 +43,7 @@ public class UrlValidatorsTests
 
     [Theory]
     [MemberData(nameof(ValidUrls))]
-    public void WebUrl_Allows_Valid(string url)
+    public void GivenWebUrl_WhenValid_ThenShouldSucceed(string url)
     {
         var result = UrlValidators.WebUrl()(url);
         result.IsValid.ShouldBeTrue($"Expected valid URL: {url}");
@@ -51,14 +51,14 @@ public class UrlValidatorsTests
 
     [Theory]
     [MemberData(nameof(InvalidUrls))]
-    public void WebUrl_Fails_Invalid(string url)
+    public void GivenWebUrl_WhenInvalid_ThenShouldFail(string url)
     {
         var result = UrlValidators.WebUrl()(url);
         result.IsValid.ShouldBeFalse($"Expected invalid URL: {url}");
     }
 
     [Fact]
-    public void WebUrl_Returns_Correct_Error_Message()
+    public void GivenWebUrl_WhenInvalid_ThenShouldReturnCorrectErrorMessage()
     {
         var result = UrlValidators.WebUrl("WebsiteUrl")("invalid");
         result.IsValid.ShouldBeFalse();
@@ -69,7 +69,7 @@ public class UrlValidatorsTests
     }
 
     [Fact]
-    public void WebUrl_Uses_Default_FieldName_When_Not_Provided()
+    public void GivenWebUrl_WhenNoFieldNameProvided_ThenShouldUseDefault()
     {
         var result = UrlValidators.WebUrl()("invalid");
         result.Errors[0].MemberName.ShouldBe("Url");
@@ -78,7 +78,7 @@ public class UrlValidatorsTests
     [Theory]
     [InlineData("https://example.com", "Homepage")]
     [InlineData("http://api.example.com", "ApiEndpoint")]
-    public void WebUrl_Validates_With_Custom_FieldName(string url, string fieldName)
+    public void GivenWebUrlWithCustomFieldName_WhenValid_ThenShouldSucceed(string url, string fieldName)
     {
         var result = UrlValidators.WebUrl(fieldName)(url);
         result.IsValid.ShouldBeTrue();
@@ -87,7 +87,7 @@ public class UrlValidatorsTests
     [Theory]
     [InlineData("http")]
     [InlineData("https")]
-    public void WebUrl_Only_Allows_Http_And_Https_Schemes(string scheme)
+    public void GivenWebUrl_WhenHttpOrHttpsScheme_ThenShouldSucceed(string scheme)
     {
         var url = $"{scheme}://example.com";
         var result = UrlValidators.WebUrl()(url);

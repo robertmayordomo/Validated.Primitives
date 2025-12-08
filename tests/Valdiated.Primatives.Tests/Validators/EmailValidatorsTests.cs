@@ -46,7 +46,7 @@ public class EmailValidatorsTests
 
     [Theory]
     [MemberData(nameof(ValidEmails))]
-    public void EmailFormat_Allows_Valid_Emails(string email)
+    public void GivenEmailFormat_WhenValidEmails_ThenShouldSucceed(string email)
     {
         var result = EmailValidators.EmailFormat()(email);
         result.IsValid.ShouldBeTrue();
@@ -54,14 +54,14 @@ public class EmailValidatorsTests
 
     [Theory]
     [MemberData(nameof(InvalidEmails))]
-    public void EmailFormat_Fails_Invalid_Emails(string email)
+    public void GivenEmailFormat_WhenInvalidEmails_ThenShouldFail(string email)
     {
         var result = EmailValidators.EmailFormat("Email")(email);
         result.IsValid.ShouldBeFalse($"Expected invalid email: {email}");
     }
 
     [Fact]
-    public void EmailFormat_Returns_Correct_Error_Message()
+    public void GivenEmailFormat_WhenInvalid_ThenShouldReturnCorrectErrorMessage()
     {
         var result = EmailValidators.EmailFormat("EmailField")("invalid");
         result.IsValid.ShouldBeFalse();
@@ -72,7 +72,7 @@ public class EmailValidatorsTests
     }
 
     [Fact]
-    public void EmailFormat_Uses_Default_FieldName_When_Not_Provided()
+    public void GivenEmailFormat_WhenNoFieldNameProvided_ThenShouldUseDefault()
     {
         var result = EmailValidators.EmailFormat()("invalid");
         result.Errors[0].MemberName.ShouldBe("Email");
@@ -81,7 +81,7 @@ public class EmailValidatorsTests
     [Theory]
     [InlineData("test@example.com", "Email")]
     [InlineData("user@test.co.uk", "UserEmail")]
-    public void EmailFormat_Validates_With_Custom_FieldName(string email, string fieldName)
+    public void GivenEmailFormatWithCustomFieldName_WhenValid_ThenShouldSucceed(string email, string fieldName)
     {
         var result = EmailValidators.EmailFormat(fieldName)(email);
         result.IsValid.ShouldBeTrue();

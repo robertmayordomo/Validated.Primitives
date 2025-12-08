@@ -7,7 +7,7 @@ namespace Validated.Primitives.Tests.ValueObjects;
 public class CityTests
 {
     [Fact]
-    public void TryCreate_WithValidCity_ShouldSucceed()
+    public void GivenTryCreate_WhenValidCity_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("New York");
 
@@ -17,7 +17,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithNullValue_ShouldFail()
+    public void GivenTryCreate_WhenNullValue_ThenShouldFail()
     {
         var (result, city) = City.TryCreate(null!);
 
@@ -28,7 +28,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithEmptyString_ShouldFail()
+    public void GivenTryCreate_WhenEmptyString_ThenShouldFail()
     {
         var (result, city) = City.TryCreate("");
 
@@ -38,7 +38,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithWhitespace_ShouldFail()
+    public void GivenTryCreate_WhenWhitespace_ThenShouldFail()
     {
         var (result, city) = City.TryCreate("   ");
 
@@ -48,7 +48,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithMaxLength_ShouldSucceed()
+    public void GivenTryCreate_WhenMaxLength_ThenShouldSucceed()
     {
         var value = new string('a', 100);
         var (result, city) = City.TryCreate(value);
@@ -59,7 +59,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_ExceedingMaxLength_ShouldFail()
+    public void GivenTryCreate_WhenExceedingMaxLength_ThenShouldFail()
     {
         var value = new string('a', 101);
         var (result, city) = City.TryCreate(value);
@@ -70,7 +70,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithCustomPropertyName_ShouldUseInErrorMessage()
+    public void GivenTryCreateWithCustomPropertyName_WhenExceedsMaxLength_ThenShouldUseInErrorMessage()
     {
         var value = new string('a', 101);
         var (result, city) = City.TryCreate(value, "CityName");
@@ -88,7 +88,7 @@ public class CityTests
     [InlineData("San Francisco")]
     [InlineData("Seattle")]
     [InlineData("Boston")]
-    public void TryCreate_WithVariousUSCities_ShouldSucceed(string cityName)
+    public void GivenTryCreate_WhenVariousUSCities_ThenShouldSucceed(string cityName)
     {
         var (result, city) = City.TryCreate(cityName);
 
@@ -106,7 +106,7 @@ public class CityTests
     [InlineData("Toronto")]
     [InlineData("Mumbai")]
     [InlineData("Mexico City")]
-    public void TryCreate_WithInternationalCities_ShouldSucceed(string cityName)
+    public void GivenTryCreate_WhenInternationalCities_ThenShouldSucceed(string cityName)
     {
         var (result, city) = City.TryCreate(cityName);
 
@@ -116,7 +116,7 @@ public class CityTests
     }
 
     [Fact]
-    public void ToString_ReturnsValue()
+    public void GivenCity_WhenToString_ThenShouldReturnValue()
     {
         var (_, city) = City.TryCreate("New York");
 
@@ -125,7 +125,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithUnicodeCharacters_ShouldSucceed()
+    public void GivenTryCreate_WhenUnicodeCharacters_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("Montréal");
 
@@ -135,7 +135,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithAccentedCharacters_ShouldSucceed()
+    public void GivenTryCreate_WhenAccentedCharacters_ThenShouldSucceed()
     {
         var cities = new[]
         {
@@ -156,7 +156,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithHyphens_ShouldSucceed()
+    public void GivenTryCreate_WhenHyphens_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("Winston-Salem");
 
@@ -166,7 +166,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithApostrophes_ShouldSucceed()
+    public void GivenTryCreate_WhenApostrophes_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("L'Aquila");
 
@@ -176,7 +176,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithSpaces_ShouldSucceed()
+    public void GivenTryCreate_WhenSpaces_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("Salt Lake City");
 
@@ -186,7 +186,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithPeriods_ShouldSucceed()
+    public void GivenTryCreate_WhenPeriods_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("St. Louis");
 
@@ -196,7 +196,7 @@ public class CityTests
     }
 
     [Fact]
-    public void Equality_SameValues_AreEqual()
+    public void GivenEquality_WhenSameValues_ThenShouldBeEqual()
     {
         var (_, city1) = City.TryCreate("New York");
         var (_, city2) = City.TryCreate("New York");
@@ -206,7 +206,7 @@ public class CityTests
     }
 
     [Fact]
-    public void Equality_DifferentValues_AreNotEqual()
+    public void GivenEquality_WhenDifferentValues_ThenShouldNotBeEqual()
     {
         var (_, city1) = City.TryCreate("New York");
         var (_, city2) = City.TryCreate("Los Angeles");
@@ -216,7 +216,7 @@ public class CityTests
     }
 
     [Fact]
-    public void Equality_CaseSensitive()
+    public void GivenEquality_WhenDifferentCase_ThenShouldBeCaseSensitive()
     {
         var (_, city1) = City.TryCreate("New York");
         var (_, city2) = City.TryCreate("new york");
@@ -226,7 +226,7 @@ public class CityTests
     }
 
     [Fact]
-    public void City_ShouldHaveRecordSemantics()
+    public void GivenCity_WhenComparing_ThenShouldHaveRecordSemantics()
     {
         var (_, city1) = City.TryCreate("New York");
         var (_, city2) = City.TryCreate("New York");
@@ -239,7 +239,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithExactly100Characters_ShouldSucceed()
+    public void GivenTryCreate_WhenExactly100Characters_ThenShouldSucceed()
     {
         var exactValue = new string('X', 100);
         var (result, city) = City.TryCreate(exactValue);
@@ -250,7 +250,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_With101Characters_ShouldFail()
+    public void GivenTryCreate_When101Characters_ThenShouldFail()
     {
         var tooLong = new string('X', 101);
         var (result, city) = City.TryCreate(tooLong);
@@ -261,7 +261,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithSingleCharacter_ShouldSucceed()
+    public void GivenTryCreate_WhenSingleCharacter_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("X");
 
@@ -271,7 +271,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithNumbers_ShouldSucceed()
+    public void GivenTryCreate_WhenNumbers_ThenShouldSucceed()
     {
         var (result, city) = City.TryCreate("City 17");
 
@@ -281,7 +281,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithMixedCase_PreservesCase()
+    public void GivenTryCreate_WhenMixedCase_ThenShouldPreserveCase()
     {
         var (result, city) = City.TryCreate("New YoRk");
 
@@ -291,7 +291,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_WithLeadingAndTrailingSpaces_TrimsSpaces()
+    public void GivenTryCreate_WhenLeadingAndTrailingSpaces_ThenShouldTrimSpaces()
     {
         var (result, city) = City.TryCreate("  New York  ");
 
@@ -302,7 +302,7 @@ public class CityTests
     }
 
     [Fact]
-    public void TryCreate_ReturnsMultipleErrors_WhenBothValidationsFail()
+    public void GivenTryCreate_WhenBothValidationsFail_ThenShouldReturnMultipleErrors()
     {
         var tooLong = new string('a', 101);
         var (result, city) = City.TryCreate(tooLong);
@@ -326,7 +326,7 @@ public class CityTests
     [InlineData("Seoul")]
     [InlineData("Shanghai")]
     [InlineData("Tehran")]
-    public void TryCreate_WithMajorWorldCities_ShouldSucceed(string cityName)
+    public void GivenTryCreate_WhenMajorWorldCities_ThenShouldSucceed(string cityName)
     {
         var (result, city) = City.TryCreate(cityName);
 

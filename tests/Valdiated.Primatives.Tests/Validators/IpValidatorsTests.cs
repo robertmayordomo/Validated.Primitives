@@ -45,7 +45,7 @@ public class IpValidatorsTests
 
     [Theory]
     [MemberData(nameof(ValidIps))]
-    public void IpAddress_Allows_Valid_Ip(string ip)
+    public void GivenIpAddress_WhenValidIp_ThenShouldSucceed(string ip)
     {
         var result = IpValidators.IpAddress()(ip);
         result.IsValid.ShouldBeTrue($"Expected valid IP: {ip}");
@@ -53,14 +53,14 @@ public class IpValidatorsTests
 
     [Theory]
     [MemberData(nameof(InvalidIps))]
-    public void IpAddress_Fails_Invalid_Ip(string ip)
+    public void GivenIpAddress_WhenInvalidIp_ThenShouldFail(string ip)
     {
         var result = IpValidators.IpAddress()(ip);
         result.IsValid.ShouldBeFalse($"Expected invalid IP: {ip}");
     }
 
     [Fact]
-    public void IpAddress_Returns_Correct_Error_Message()
+    public void GivenIpAddress_WhenInvalid_ThenShouldReturnCorrectErrorMessage()
     {
         var result = IpValidators.IpAddress("ServerIp")("invalid");
         result.IsValid.ShouldBeFalse();
@@ -71,7 +71,7 @@ public class IpValidatorsTests
     }
 
     [Fact]
-    public void IpAddress_Uses_Default_FieldName_When_Not_Provided()
+    public void GivenIpAddress_WhenNoFieldNameProvided_ThenShouldUseDefault()
     {
         var result = IpValidators.IpAddress()("invalid");
         result.Errors[0].MemberName.ShouldBe("IpAddress");
@@ -80,14 +80,14 @@ public class IpValidatorsTests
     [Theory]
     [InlineData("192.168.1.1", "ServerIp")]
     [InlineData("::1", "ClientIp")]
-    public void IpAddress_Validates_With_Custom_FieldName(string ip, string fieldName)
+    public void GivenIpAddressWithCustomFieldName_WhenValid_ThenShouldSucceed(string ip, string fieldName)
     {
         var result = IpValidators.IpAddress(fieldName)(ip);
         result.IsValid.ShouldBeTrue();
     }
 
     [Fact]
-    public void IpAddress_Handles_Both_IPv4_And_IPv6()
+    public void GivenIpAddress_WhenIPv4OrIPv6_ThenShouldHandleBoth()
     {
         var ipv4Result = IpValidators.IpAddress()("192.168.1.1");
         ipv4Result.IsValid.ShouldBeTrue();
@@ -100,7 +100,7 @@ public class IpValidatorsTests
     [InlineData("192.168.1")]
     [InlineData("10.0")]
     [InlineData("127")]
-    public void IpAddress_Rejects_Shorthand_IPv4_Notation(string ip)
+    public void GivenIpAddress_WhenShorthandIPv4Notation_ThenShouldReject(string ip)
     {
         var result = IpValidators.IpAddress()(ip);
         result.IsValid.ShouldBeFalse($"Shorthand IPv4 should be rejected: {ip}");
@@ -110,7 +110,7 @@ public class IpValidatorsTests
     [InlineData("192.168.001.1")]
     [InlineData("192.168.01.1")]
     [InlineData("192.168.1.001")]
-    public void IpAddress_Rejects_Leading_Zeros_In_IPv4(string ip)
+    public void GivenIpAddress_WhenLeadingZerosInIPv4_ThenShouldReject(string ip)
     {
         var result = IpValidators.IpAddress()(ip);
         result.IsValid.ShouldBeFalse($"IPv4 with leading zeros should be rejected: {ip}");
