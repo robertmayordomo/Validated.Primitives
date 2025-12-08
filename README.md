@@ -269,3 +269,171 @@ if (addressResult.IsValid && nameResult.IsValid &&
 - `Address` - Complete mailing address with country-specific validation
 - `ContactInformation` - Email + Phones + Website
 - `CreditCardDetails` - CardNumber + CVV + Expiration with masking
+
+## ??? Builder Pattern for Complex Types
+
+For easier construction of complex domain models, use the fluent builder pattern:
+
+### AddressBuilder
+
+Build addresses with a fluent interface that handles validation automatically:
+
+```csharp
+using Validated.Primitives.Domain.Builders;
+using Validated.Primitives.ValueObjects;
+
+// Simple address with required fields
+var (result, address) = new AddressBuilder()
+    .WithStreet("123 Main Street")
+    .WithCity("New York")
+    .WithCountry(CountryCode.UnitedStates)
+    .WithPostalCode("10001")
+    .Build();
+
+if (result.IsValid)
+{
+    Console.WriteLine(address!.ToString());
+    // Output: 123 Main Street, New York, 10001, United States
+}
+
+// Complete address with all optional fields
+var (result, address) = new AddressBuilder()
+    .WithStreet("456 Oak Avenue")
+    .WithAddressLine2("Apartment 4B")
+    .WithCity("Los Angeles")
+    .WithStateProvince("California")
+    .WithCountry(CountryCode.UnitedStates)
+    .WithPostalCode("90001")
+    .Build();
+
+// Using the convenience method
+var (result, address) = new AddressBuilder()
+    .WithAddress(
+        street: "789 Elm Street",
+        city: "Chicago",
+        country: CountryCode.UnitedStates,
+        postalCode: "60601",
+        addressLine2: "Suite 200",
+        stateProvince: "Illinois")
+    .Build();
+```
+
+### CreditCardBuilder
+
+Build credit card details with flexible input formats:
+
+```csharp
+using Validated.Primitives.Domain.Builders;
+
+// Basic credit card details
+var (result, card) = new CreditCardBuilder()
+    .WithCardNumber("4111 1111 1111 1111")
+    .WithSecurityCode("123")
+    .WithExpiration(12, 2025)
+    .Build();
+
+// Using string expiration format
+var (result, card) = new CreditCardBuilder()
+    .WithCardNumber("5500 0000 0000 0004")
+    .WithSecurityCode(456)  // Can use int or string
+    .WithExpiration("12/25")  // Supports MM/YY or MM/YYYY
+    .Build();
+
+// Using DateTime
+var (result, card) = new CreditCardBuilder()
+    .WithCardNumber("3400 0000 0000 009")
+    .WithSecurityCode("789")
+    .WithExpiration(DateTime.Now.AddYears(2))
+    .Build();
+
+if (result.IsValid)
+{
+    Console.WriteLine($"Card: {card!.GetMaskedCardNumber()}");
+    Console.WriteLine($"Expires: {card.Expiration}");
+    Console.WriteLine($"Valid: {!card.IsExpired()}");
+}
+else
+{
+    // All validation errors collected at once
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine($"{error.MemberName}: {error.Message}");
+    }
+}
+```
+
+### Builder Features
+
+**? Key Benefits:**
+- **Fluent Interface** - Method chaining for readable code
+- **Flexible Input** - Multiple ways to provide the same data
+- **Comprehensive Validation** - All errors collected in one call
+- **Nullable Parameters** - Accepts incomplete data and validates properly
+- **Reusable** - Reset and reuse builder instances
+- **Type Safe** - Compile-time checks for required parameters
+
+**?? Reusing Builders:**
+
+```csharp
+var builder = new AddressBuilder();
+
+// Build first address
+var (result1, address1) = builder
+    .WithStreet("111 First Street")
+    .WithCity("Denver")
+    .WithCountry(CountryCode.UnitedStates)
+    .WithPostalCode("80201")
+    .Build();
+
+// Reset and build second address
+var (result2, address2) = builder
+    .Reset()
+    .WithStreet("222 Second Avenue")
+    .WithCity("Phoenix")
+    .WithCountry(CountryCode.UnitedStates)
+    .WithPostalCode("85001")
+    .Build();
+```
+
+**?? Form Integration Example:**
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class AddressesController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult Create([FromBody] CreateAddressRequest request)
+    {
+        // Builder handles null/incomplete data gracefully
+        var (result, address) = new AddressBuilder()
+            .WithStreet(request.Street)
+            .WithAddressLine2(request.AddressLine2)
+            .WithCity(request.City)
+            .WithStateProvince(request.StateProvince)
+            .WithCountry(request.Country)
+            .WithPostalCode(request.PostalCode)
+            .Build();
+
+        if (!result.IsValid)
+        {
+            return BadRequest(new 
+            { 
+                errors = result.Errors.Select(e => new 
+                { 
+                    field = e.MemberName, 
+                    message = e.Message,
+                    code = e.Code 
+                })
+            });
+        }
+
+        // Save valid address...
+        return Ok(new { id = 1, address = address!.ToString() });
+    }
+}
+```
+
+**Available Builders:**
+- `AddressBuilder` - Required: street, city, country, postalCode | Optional: addressLine2, stateProvince
+- `CreditCardBuilder` - Required: cardNumber, securityCode, expiration | Multiple expiration formats supported

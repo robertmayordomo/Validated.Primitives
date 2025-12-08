@@ -1,17 +1,19 @@
-using System;
-using Xunit;
+using Shouldly;
 using Validated.Primitives.ValueObjects;
+using Xunit;
 
-namespace Valdiated.Primatives.Tests.ValueObjects;
+namespace Validated.Primitives.Tests.ValueObjects;
 
 public class CreditCardNumberTests
 {
     [Fact]
-    public void Create_WithValidNumber_ReturnsInstance()
+    public void TryCreate_WithValidNumber_ReturnsInstance()
     {
-        var cc = CreditCardNumber.Create("4111 1111 1111 1111"); // Visa test number
-        Assert.Equal("4111111111111111", cc.ToString());
-        Assert.Equal("************1111", cc.Masked());
+        var (result, cc) = CreditCardNumber.TryCreate("4111 1111 1111 1111"); // Visa test number
+        result.IsValid.ShouldBeTrue();
+        cc.ShouldNotBeNull();
+        cc!.ToString().ShouldBe("4111111111111111");
+        cc.Masked().ShouldBe("************1111");
     }
 
     [Theory]
@@ -19,8 +21,10 @@ public class CreditCardNumberTests
     [InlineData("")]
     [InlineData("1234")]
     [InlineData("0000 0000 0000 0000")]
-    public void Create_Invalid_Throws(string input)
+    public void TryCreate_Invalid_ReturnsFailure(string input)
     {
-        Assert.Throws<ArgumentException>(() => CreditCardNumber.Create(input));
+        var (result, cc) = CreditCardNumber.TryCreate(input);
+        result.IsValid.ShouldBeFalse();
+        cc.ShouldBeNull();
     }
 }

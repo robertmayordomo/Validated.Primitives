@@ -49,45 +49,74 @@ public sealed record Address
     /// <param name="stateProvince">Optional state or province.</param>
     /// <returns>A tuple containing the validation result and the Address if valid.</returns>
     public static (ValidationResult Result, Address? Value) TryCreate(
-        string street,
+        string? street,
         string? addressLine2,
-        string city,
-        CountryCode country,
-        string postalCode,
+        string? city,
+        CountryCode? country,
+        string? postalCode,
         string? stateProvince = null)
     {
         var result = ValidationResult.Success();
 
         // Validate street using AddressLine primitive
         var (streetResult, streetValue) = AddressLine.TryCreate(street, "Street");
-        result.Merge(streetResult);
-
-        // Ensure street is not null (it's required)
+        if (!streetResult.IsValid)
+        {
+            result.Merge(streetResult);
+        }
+        
+        // Street is required - check if it's null after validation
         if (streetValue == null)
         {
-            result.AddError("Street address is required and cannot be empty.", "Street", "Required");
+            result.AddError("Street address is required.", "Street", "Required");
         }
 
         // Validate optional address line 2
-        var (line2Result, line2Value) = AddressLine.TryCreate(addressLine2, "AddressLine2");
-        result.Merge(line2Result);
+        AddressLine? line2Value = null;
+        if (!string.IsNullOrWhiteSpace(addressLine2))
+        {
+            var (line2Result, line2Val) = AddressLine.TryCreate(addressLine2, "AddressLine2");
+            if (!line2Result.IsValid)
+            {
+                result.Merge(line2Result);
+            }
+            line2Value = line2Val;
+        }
 
         // Validate city using City primitive
         var (cityResult, cityValue) = City.TryCreate(city, "City");
-        result.Merge(cityResult);
+        if (!cityResult.IsValid)
+        {
+            result.Merge(cityResult);
+        }
 
         // Validate state/province if provided
         StateProvince? stateProvinceValue = null;
         if (!string.IsNullOrWhiteSpace(stateProvince))
         {
             var (stateResult, stateVal) = StateProvince.TryCreate(stateProvince, "StateProvince");
-            result.Merge(stateResult);
+            if (!stateResult.IsValid)
+            {
+                result.Merge(stateResult);
+            }
             stateProvinceValue = stateVal;
         }
 
-        // Validate postal code using primitive
-        var (postalResult, postalValue) = PostalCode.TryCreate(country, postalCode, "PostalCode");
-        result.Merge(postalResult);
+        // Validate postal code using primitive - check for null country first
+        PostalCode? postalValue = null;
+        if (!country.HasValue || country.Value == CountryCode.Unknown)
+        {
+            result.AddError("Country is required.", "Country", "Required");
+        }
+        else
+        {
+            var (postalResult, postalVal) = PostalCode.TryCreate(country.Value, postalCode, "PostalCode");
+            if (!postalResult.IsValid)
+            {
+                result.Merge(postalResult);
+            }
+            postalValue = postalVal;
+        }
 
         if (!result.IsValid)
         {

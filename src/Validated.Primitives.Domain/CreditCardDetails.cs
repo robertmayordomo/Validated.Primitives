@@ -33,44 +33,41 @@ public sealed record CreditCardDetails
     /// <param name="expirationYear">The expiration year.</param>
     /// <returns>A tuple containing the validation result and the CreditCardDetails if valid.</returns>
     public static (ValidationResult Result, CreditCardDetails? Value) TryCreate(
-        string cardNumber,
-        string securityNumber,
-        int expirationMonth,
-        int expirationYear)
+        string? cardNumber,
+        string? securityNumber,
+        int? expirationMonth,
+        int? expirationYear)
     {
         var result = ValidationResult.Success();
 
         // Validate card number
-        CreditCardNumber? cardNumberValue = null;
-        try
+        var (cardNumberResult, cardNumberValue) = CreditCardNumber.TryCreate(cardNumber, "CardNumber");
+        if (!cardNumberResult.IsValid)
         {
-            cardNumberValue = CreditCardNumber.Create(cardNumber);
-        }
-        catch (ArgumentException ex)
-        {
-            result.AddError(ex.Message, "CardNumber", "Invalid");
+            result.Merge(cardNumberResult);
         }
 
         // Validate security number
-        CreditCardSecurityNumber? securityNumberValue = null;
-        try
+        var (securityNumberResult, securityNumberValue) = CreditCardSecurityNumber.TryCreate(securityNumber, "SecurityNumber");
+        if (!securityNumberResult.IsValid)
         {
-            securityNumberValue = CreditCardSecurityNumber.Create(securityNumber);
-        }
-        catch (ArgumentException ex)
-        {
-            result.AddError(ex.Message, "SecurityNumber", "Invalid");
+            result.Merge(securityNumberResult);
         }
 
-        // Validate expiration
+        // Validate expiration - check for null values first
         CreditCardExpiration? expirationValue = null;
-        try
+        if (!expirationMonth.HasValue || !expirationYear.HasValue)
         {
-            expirationValue = CreditCardExpiration.Create(expirationMonth, expirationYear);
+            result.AddError("Expiration date is required.", "Expiration", "Required");
         }
-        catch (Exception ex) when (ex is ArgumentException || ex is ArgumentOutOfRangeException)
+        else
         {
-            result.AddError(ex.Message, "Expiration", "Invalid");
+            var (expirationResult, expValue) = CreditCardExpiration.TryCreate(expirationMonth.Value, expirationYear.Value, "Expiration");
+            if (!expirationResult.IsValid)
+            {
+                result.Merge(expirationResult);
+            }
+            expirationValue = expValue;
         }
 
         if (!result.IsValid)

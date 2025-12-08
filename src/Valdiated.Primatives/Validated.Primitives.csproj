@@ -15,11 +15,35 @@
     <PackageProjectUrl>https://github.com/rbmayordomo/validated-primitives</PackageProjectUrl>
     <RepositoryUrl>https://github.com/rbmayordomo/validated-primitives</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>validation;value-objects;ddd;domain-driven-design;primitives;strongly-typed;email-validation;phone-validation;postal-code;domain-validation;self-validating;primitive-obsession;type-safety;immutable;datetime-validation;url-validation;ip-validation;csharp;dotnet</PackageTags>
+    <PackageTags>validation;value-objects;ddd;domain-driven-design;primitives;strongly-typed;email-validation;phone-validation;postal-code;domain-validation;self-validating;primitive-obsession;type-safety;immutable;datetime-validation;url-validation;ip-validation;credit-card;payment;csharp;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Validated primitives including EmailAddress, PhoneNumber, WebsiteUrl, IpAddress, DateOfBirth, FutureDate, BetweenDatesSelection, DateRange, DateOnlyRange, TimeOnlyRange, and PostalCode.</PackageReleaseNotes>
+    <PackageReleaseNotes>## Credit Card Value Objects Refactored to TryCreate Pattern
+
+### Breaking Changes
+- **CreditCardNumber**: Replaced `Create()` method with `TryCreate()` pattern. Now inherits from `ValidatedValueObject&lt;string&gt;` and returns `(ValidationResult, CreditCardNumber?)` tuple instead of throwing exceptions.
+- **CreditCardSecurityNumber**: Replaced `Create()` method with `TryCreate()` pattern. Now inherits from `ValidatedValueObject&lt;string&gt;` and returns `(ValidationResult, CreditCardSecurityNumber?)` tuple.
+- **CreditCardExpiration**: Replaced `Create()` method with `TryCreate()` pattern. Now inherits from `ValidatedValueObject&lt;(int Month, int Year)&gt;` and returns `(ValidationResult, CreditCardExpiration?)` tuple.
+
+### New Features
+- **Structured Validation**: All credit card value objects now return detailed validation results with error codes (e.g., "Required", "InvalidMonth", "Expired", "Luhn check failed") instead of throwing exceptions.
+- **Validators Added**: New validator classes for each credit card component:
+  - `CreditCardValidators`: NotEmpty, ValidDigitCount, NotAllIdenticalDigits, LuhnCheck
+  - `CreditCardSecurityNumberValidators`: NotEmpty, ValidLength
+  - `CreditCardExpirationValidators`: ValidMonth, ValidYear, NotExpired
+- **Error Code Support**: All validation failures now include error codes for better error handling and categorization.
+- **Nullable Parameters**: CreditCardDetails.TryCreate now accepts nullable parameters for better API flexibility.
+- **Comprehensive Error Collection**: Multiple validation errors are collected and returned together, providing complete feedback in a single call.
+
+### Improvements
+- **Better Error Handling**: Validation errors are returned as structured ValidationResult objects instead of exceptions, enabling better error handling in consuming code.
+- **Type Safety**: All value objects are now immutable records with proper equality and hash code implementations.
+- **Year Normalization**: CreditCardExpiration automatically normalizes two-digit years (e.g., 25 → 2025).
+- **Resilient Validators**: Validators safely handle invalid input without throwing exceptions during validation.
+
+### Other Value Objects
+Validated primitives including EmailAddress, PhoneNumber, WebsiteUrl, IpAddress, DateOfBirth, FutureDate, BetweenDatesSelection, DateRange, DateOnlyRange, TimeOnlyRange, Money, Percentage, and PostalCode.</PackageReleaseNotes>
     
     <!-- Build Output Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

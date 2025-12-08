@@ -314,4 +314,77 @@ public class CreditCardDetailsTests
             card.ShouldNotBeNull();
         }
     }
+
+    [Fact]
+    public void TryCreate_Returns_Failure_When_ExpirationMonth_Is_Null()
+    {
+        var (result, card) = CreditCardDetails.TryCreate(
+            "4111 1111 1111 1111",
+            "123",
+            null,
+            2025);
+
+        result.IsValid.ShouldBeFalse("Result should be invalid when expiration month is null");
+        card.ShouldBeNull();
+        result.Errors.ShouldContain(e => e.MemberName == "Expiration" && e.Code == "Required");
+    }
+
+    [Fact]
+    public void TryCreate_Returns_Failure_When_ExpirationYear_Is_Null()
+    {
+        var (result, card) = CreditCardDetails.TryCreate(
+            "4111 1111 1111 1111",
+            "123",
+            12,
+            null);
+
+        result.IsValid.ShouldBeFalse("Result should be invalid when expiration year is null");
+        card.ShouldBeNull();
+        result.Errors.ShouldContain(e => e.MemberName == "Expiration" && e.Code == "Required");
+    }
+
+    [Fact]
+    public void TryCreate_Returns_Failure_When_CardNumber_Is_Null()
+    {
+        var (result, card) = CreditCardDetails.TryCreate(
+            null,
+            "123",
+            12,
+            2025);
+
+        result.IsValid.ShouldBeFalse("Result should be invalid when card number is null");
+        card.ShouldBeNull();
+        result.Errors.ShouldContain(e => e.MemberName == "CardNumber" && e.Code == "Required");
+    }
+
+    [Fact]
+    public void TryCreate_Returns_Failure_When_SecurityNumber_Is_Null()
+    {
+        var (result, card) = CreditCardDetails.TryCreate(
+            "4111 1111 1111 1111",
+            null,
+            12,
+            2025);
+
+        result.IsValid.ShouldBeFalse("Result should be invalid when security number is null");
+        card.ShouldBeNull();
+        result.Errors.ShouldContain(e => e.MemberName == "SecurityNumber" && e.Code == "Required");
+    }
+
+    [Fact]
+    public void TryCreate_Returns_Failure_When_All_Parameters_Are_Null()
+    {
+        var (result, card) = CreditCardDetails.TryCreate(
+            null,
+            null,
+            null,
+            null);
+
+        result.IsValid.ShouldBeFalse("Result should be invalid when all parameters are null");
+        card.ShouldBeNull();
+        result.Errors.Count.ShouldBe(3, "Should have errors for all three required fields");
+        result.Errors.ShouldContain(e => e.MemberName == "CardNumber" && e.Code == "Required");
+        result.Errors.ShouldContain(e => e.MemberName == "SecurityNumber" && e.Code == "Required");
+        result.Errors.ShouldContain(e => e.MemberName == "Expiration" && e.Code == "Required");
+    }
 }

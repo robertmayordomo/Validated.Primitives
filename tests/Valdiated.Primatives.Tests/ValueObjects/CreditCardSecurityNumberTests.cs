@@ -1,8 +1,8 @@
-using System;
-using Xunit;
+using Shouldly;
 using Validated.Primitives.ValueObjects;
+using Xunit;
 
-namespace Valdiated.Primatives.Tests.ValueObjects;
+namespace Validated.Primitives.Tests.ValueObjects;
 
 public class CreditCardSecurityNumberTests
 {
@@ -10,10 +10,14 @@ public class CreditCardSecurityNumberTests
     [InlineData("123")]
     [InlineData(" 123 ")]
     [InlineData("0123")]
-    public void Create_Valid_ReturnsInstance(string input)
+    public void TryCreate_Valid_ReturnsInstance(string input)
     {
-        var cvv = CreditCardSecurityNumber.Create(input);
-        Assert.Equal(new string(input.Trim().Replace(" ", string.Empty).ToCharArray()), cvv.ToString());
+        var (result, cvv) = CreditCardSecurityNumber.TryCreate(input);
+        result.IsValid.ShouldBeTrue();
+        cvv.ShouldNotBeNull();
+
+        var expectedDigits = new string(input.Where(char.IsDigit).ToArray());
+        cvv!.ToString().ShouldBe(expectedDigits);
     }
 
     [Theory]
@@ -21,8 +25,10 @@ public class CreditCardSecurityNumberTests
     [InlineData("")]
     [InlineData("12")]
     [InlineData("12345")]
-    public void Create_Invalid_Throws(string input)
+    public void TryCreate_Invalid_ReturnsFailure(string input)
     {
-        Assert.Throws<ArgumentException>(() => CreditCardSecurityNumber.Create(input));
+        var (result, cvv) = CreditCardSecurityNumber.TryCreate(input);
+        result.IsValid.ShouldBeFalse();
+        cvv.ShouldBeNull();
     }
 }
