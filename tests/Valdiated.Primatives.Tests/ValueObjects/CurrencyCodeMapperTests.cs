@@ -1,4 +1,4 @@
-using Shouldly;
+ï»¿using Shouldly;
 using Validated.Primitives.ValueObjects;
 using Xunit;
 
@@ -145,10 +145,10 @@ public class CurrencyCodeMapperTests
 
     [Theory]
     [InlineData("USD", "$")]
-    [InlineData("GBP", "£")]
-    [InlineData("EUR", "€")]
-    [InlineData("JPY", "¥")]
-    [InlineData("CNY", "¥")]
+    [InlineData("GBP", "Â£")]
+    [InlineData("EUR", "â‚¬")]
+    [InlineData("JPY", "Â¥")]
+    [InlineData("CNY", "Â¥")]
     [InlineData("CHF", "CHF")]
     [InlineData("CAD", "C$")]
     [InlineData("AUD", "A$")]
@@ -173,9 +173,9 @@ public class CurrencyCodeMapperTests
     }
 
     [Theory]
-    [InlineData("INR", "?")]
-    [InlineData("RUB", "?")]
-    [InlineData("KRW", "?")]
+    [InlineData("INR", "â‚¹")]
+    [InlineData("RUB", "â‚½")]
+    [InlineData("KRW", "â‚©")]
     public void GetCurrencySymbol_Returns_QuestionMark_For_Currencies_Without_Unicode_Symbol(string currencyCode, string expectedSymbol)
     {
         // Act
@@ -303,9 +303,9 @@ public class CurrencyCodeMapperTests
     }
 
     [Theory]
-    [InlineData(CountryCode.Germany, "EUR", "€")]
-    [InlineData(CountryCode.France, "EUR", "€")]
-    [InlineData(CountryCode.Italy, "EUR", "€")]
+    [InlineData(CountryCode.Germany, "EUR", "â‚¬")]
+    [InlineData(CountryCode.France, "EUR", "â‚¬")]
+    [InlineData(CountryCode.Italy, "EUR", "â‚¬")]
     public void Multiple_Countries_Can_Share_Same_Currency(CountryCode countryCode, string expectedCurrency, string expectedSymbol)
     {
         // Act
@@ -373,8 +373,8 @@ public class CurrencyCodeMapperTests
     }
 
     [Theory]
-    [InlineData("JPY", "¥")]
-    [InlineData("CNY", "¥")]
+    [InlineData("JPY", "Â¥")]
+    [InlineData("CNY", "Â¥")]
     public void Japanese_Yen_And_Chinese_Yuan_Share_Symbol(string currencyCode, string expectedSymbol)
     {
         // Act

@@ -59,7 +59,7 @@ public static class CurrencyCodeMapper
         "CNY" => "¥",
         "INR" => "₹",
         "RUB" => "₽",
-        "KRW" => "?",
+        "KRW" => "₩",
         "CHF" => "CHF",
         "CAD" => "C$",
         "AUD" => "A$",
