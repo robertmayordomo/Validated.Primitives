@@ -55,8 +55,6 @@ public class BankAccountNumberValidatorsTests
         result.Errors[0].MemberName.ShouldBe("TestField");
     }
 
-    #region UK Tests
-
     [Theory]
     [InlineData("12345678")]
     [InlineData("00123456")]
@@ -92,10 +90,6 @@ public class BankAccountNumberValidatorsTests
         result.Errors[0].Message.ShouldContain("8 digits");
     }
 
-    #endregion
-
-    #region US Tests
-
     [Theory]
     [InlineData("1234")]
     [InlineData("123456789")]
@@ -128,10 +122,6 @@ public class BankAccountNumberValidatorsTests
         result.IsValid.ShouldBeFalse();
         result.Errors[0].Code.ShouldBe("InvalidCountryAccountNumberFormat");
     }
-
-    #endregion
-
-    #region IBAN Tests - Germany
 
     [Theory]
     [InlineData("DE89370400440532013000")]
@@ -166,10 +156,6 @@ public class BankAccountNumberValidatorsTests
         result.Errors[0].Code.ShouldBe("InvalidCountryAccountNumberFormat");
     }
 
-    #endregion
-
-    #region IBAN Tests - France
-
     [Theory]
     [InlineData("FR1420041010050500013M02606")]
     [InlineData("FR7630006000011234567890189")]
@@ -202,10 +188,6 @@ public class BankAccountNumberValidatorsTests
         result.Errors[0].Code.ShouldBe("InvalidCountryAccountNumberFormat");
     }
 
-    #endregion
-
-    #region IBAN Tests - Netherlands
-
     [Theory]
     [InlineData("NL91ABNA0417164300")]
     [InlineData("NL39RABO0300065264")]
@@ -222,10 +204,6 @@ public class BankAccountNumberValidatorsTests
         result.Errors.ShouldBeEmpty();
     }
 
-    #endregion
-
-    #region IBAN Tests - Ireland
-
     [Theory]
     [InlineData("IE29AIBK93115212345678")]
     [InlineData("IE64IRCE92050112345678")]
@@ -241,10 +219,6 @@ public class BankAccountNumberValidatorsTests
         result.IsValid.ShouldBeTrue();
         result.Errors.ShouldBeEmpty();
     }
-
-    #endregion
-
-    #region Australia Tests
 
     [Theory]
     [InlineData("123456")]
@@ -279,10 +253,6 @@ public class BankAccountNumberValidatorsTests
         result.Errors[0].Code.ShouldBe("InvalidCountryAccountNumberFormat");
     }
 
-    #endregion
-
-    #region Canada Tests
-
     [Theory]
     [InlineData("1234567")]
     [InlineData("123456789012")]
@@ -315,10 +285,6 @@ public class BankAccountNumberValidatorsTests
         result.Errors[0].Code.ShouldBe("InvalidCountryAccountNumberFormat");
     }
 
-    #endregion
-
-    #region Japan Tests
-
     [Theory]
     [InlineData("1234567")]
     public void GivenValidateCountryFormat_WhenValidJapaneseAccountNumber_ThenShouldPass(string value)
@@ -349,10 +315,6 @@ public class BankAccountNumberValidatorsTests
         result.IsValid.ShouldBeFalse();
         result.Errors[0].Code.ShouldBe("InvalidCountryAccountNumberFormat");
     }
-
-    #endregion
-
-    #region India Tests
 
     [Theory]
     [InlineData("123456789")]
@@ -385,10 +347,6 @@ public class BankAccountNumberValidatorsTests
         result.IsValid.ShouldBeFalse();
         result.Errors[0].Code.ShouldBe("InvalidCountryAccountNumberFormat");
     }
-
-    #endregion
-
-    #region IBAN Checksum Validation Tests
 
     [Theory]
     [InlineData("GB82WEST12345698765432")]
@@ -449,8 +407,6 @@ public class BankAccountNumberValidatorsTests
         result.IsValid.ShouldBeFalse();
         result.Errors[0].Message.ShouldContain("checksum");
     }
-
-    #endregion
 
     [Fact]
     public void GivenNotNullOrWhitespace_WhenNoFieldNameProvided_ThenShouldUseDefault()

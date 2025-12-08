@@ -6,8 +6,6 @@ namespace Validated.Primitives.Tests.ValueObjects;
 
 public class BankAccountNumberTests
 {
-    #region UK Tests
-
     [Theory]
     [InlineData("12345678")]
     [InlineData("00123456")]
@@ -33,10 +31,6 @@ public class BankAccountNumberTests
         result.Errors.ShouldContain(e => e.Code == "InvalidCountryAccountNumberFormat");
     }
 
-    #endregion
-
-    #region US Tests
-
     [Theory]
     [InlineData("1234")]
     [InlineData("123456789")]
@@ -60,10 +54,6 @@ public class BankAccountNumberTests
         result.IsValid.ShouldBeFalse();
         account.ShouldBeNull();
     }
-
-    #endregion
-
-    #region IBAN Tests - Germany
 
     [Theory]
     [InlineData("DE89370400440532013000")]
@@ -89,10 +79,6 @@ public class BankAccountNumberTests
         account.ShouldBeNull();
     }
 
-    #endregion
-
-    #region IBAN Tests - France
-
     [Theory]
     [InlineData("FR1420041010050500013M02606")]
     [InlineData("FR7630006000011234567890189")]
@@ -104,10 +90,6 @@ public class BankAccountNumberTests
         account.ShouldNotBeNull();
         account!.IsIban.ShouldBeTrue();
     }
-
-    #endregion
-
-    #region IBAN Tests - Netherlands
 
     [Theory]
     [InlineData("NL91ABNA0417164300")]
@@ -121,10 +103,6 @@ public class BankAccountNumberTests
         account!.IsIban.ShouldBeTrue();
     }
 
-    #endregion
-
-    #region IBAN Tests - Ireland
-
     [Theory]
     [InlineData("IE29AIBK93115212345678")]
     [InlineData("IE64IRCE92050112345678")]
@@ -137,10 +115,6 @@ public class BankAccountNumberTests
         account!.IsIban.ShouldBeTrue();
         account!.GetIbanCountryCode().ShouldBe("IE");
     }
-
-    #endregion
-
-    #region Australia Tests
 
     [Theory]
     [InlineData("123456")]
@@ -165,10 +139,6 @@ public class BankAccountNumberTests
         account.ShouldBeNull();
     }
 
-    #endregion
-
-    #region Canada Tests
-
     [Theory]
     [InlineData("1234567")]
     [InlineData("123456789012")]
@@ -179,10 +149,6 @@ public class BankAccountNumberTests
         result.IsValid.ShouldBeTrue();
         account.ShouldNotBeNull();
     }
-
-    #endregion
-
-    #region Japan Tests
 
     [Fact]
     public void TryCreate_JapanWithValidAccountNumber_ReturnsSuccess()
@@ -204,10 +170,6 @@ public class BankAccountNumberTests
         account.ShouldBeNull();
     }
 
-    #endregion
-
-    #region India Tests
-
     [Theory]
     [InlineData("123456789")]
     [InlineData("123456789012345678")]
@@ -218,10 +180,6 @@ public class BankAccountNumberTests
         result.IsValid.ShouldBeTrue();
         account.ShouldNotBeNull();
     }
-
-    #endregion
-
-    #region Formatting Tests
 
     [Fact]
     public void ToNormalizedString_RemovesSpacesAndDashes()
@@ -249,10 +207,6 @@ public class BankAccountNumberTests
         account.ShouldNotBeNull();
         account!.ToFormattedString().ShouldBe("12345678");
     }
-
-    #endregion
-
-    #region IBAN Property Tests
 
     [Fact]
     public void IsIban_WithIbanFormat_ReturnsTrue()
@@ -308,10 +262,6 @@ public class BankAccountNumberTests
         account!.GetIbanCheckDigits().ShouldBeNull();
     }
 
-    #endregion
-
-    #region Masking Tests
-
     [Fact]
     public void Masked_ShowsOnlyLastFourDigits()
     {
@@ -341,10 +291,6 @@ public class BankAccountNumberTests
         account!.Masked().ShouldBe("****");
     }
 
-    #endregion
-
-    #region Validation Tests
-
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -369,10 +315,6 @@ public class BankAccountNumberTests
         account.ShouldBeNull();
         result.Errors.ShouldContain(e => e.Code == "InvalidFormat");
     }
-
-    #endregion
-
-    #region Equality Tests
 
     [Fact]
     public void Equals_WithSameAccountNumber_ReturnsTrue()
@@ -451,10 +393,6 @@ public class BankAccountNumberTests
         account1!.GetHashCode().ShouldNotBe(account2!.GetHashCode());
     }
 
-    #endregion
-
-    #region Misc Tests
-
     [Fact]
     public void ToString_ReturnsOriginalValue()
     {
@@ -482,6 +420,4 @@ public class BankAccountNumberTests
         account.ShouldBeNull();
         result.Errors.ShouldContain(e => e.MemberName == "MyAccount");
     }
-
-    #endregion
 }
