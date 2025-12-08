@@ -13,8 +13,6 @@ public class DateTimeValueObjectSerializationTests
         WriteIndented = false
     };
 
-    #region FutureDate Tests
-
     [Fact]
     public void Serialize_FutureDate_Should_Write_DateTime_Value()
     {
@@ -99,10 +97,6 @@ public class DateTimeValueObjectSerializationTests
         futureDate.ShouldBeNull();
     }
 
-    #endregion
-
-    #region DateOfBirth Tests
-
     [Fact]
     public void Serialize_DateOfBirth_Should_Write_DateTime_Value()
     {
@@ -186,10 +180,6 @@ public class DateTimeValueObjectSerializationTests
         // Assert
         dateOfBirth.ShouldBeNull();
     }
-
-    #endregion
-
-    #region Complex Object Tests
 
     [Fact]
     public void Serialize_Object_With_DateTime_ValueObjects_Should_Work()
@@ -284,6 +274,4 @@ public class DateTimeValueObjectSerializationTests
         public DateOfBirth DateOfBirth { get; set; } = null!;
         public FutureDate Appointment { get; set; } = null!;
     }
-
-    #endregion
 }

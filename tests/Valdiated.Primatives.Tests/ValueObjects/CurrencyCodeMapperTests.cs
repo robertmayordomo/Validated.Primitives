@@ -6,8 +6,6 @@ namespace Validated.Primitives.Tests.ValueObjects;
 
 public class CurrencyCodeMapperTests
 {
-    #region GetCurrencyCode Tests
-
     [Theory]
     [InlineData(CountryCode.UnitedStates, "USD")]
     [InlineData(CountryCode.UnitedKingdom, "GBP")]
@@ -138,10 +136,6 @@ public class CurrencyCodeMapperTests
         result2.ShouldBe(result3);
         result1.ShouldBe("USD");
     }
-
-    #endregion
-
-    #region GetCurrencySymbol Tests
 
     [Theory]
     [InlineData("USD", "$")]
@@ -283,10 +277,6 @@ public class CurrencyCodeMapperTests
         result1.ShouldBe("$");
     }
 
-    #endregion
-
-    #region Integration Tests
-
     [Fact]
     public void CountryCode_To_CurrencyCode_To_Symbol_Chain_Works()
     {
@@ -384,10 +374,6 @@ public class CurrencyCodeMapperTests
         symbol.ShouldBe(expectedSymbol);
     }
 
-    #endregion
-
-    #region Case Sensitivity Tests
-
     [Theory]
     [InlineData("usd", "")]
     [InlineData("Usd", "")]
@@ -417,10 +403,6 @@ public class CurrencyCodeMapperTests
             CurrencyCodeMapper.GetCurrencySymbol(code.ToLower()).ShouldBe(string.Empty, $"{code.ToLower()} should not match");
         }
     }
-
-    #endregion
-
-    #region Edge Cases and Boundary Tests
 
     [Fact]
     public void GetCurrencyCode_Covers_All_Continents()
@@ -479,10 +461,6 @@ public class CurrencyCodeMapperTests
         eurozoneCount.ShouldBe(9, "Should have 9 Eurozone countries mapped");
     }
 
-    #endregion
-
-    #region Symbol Validation Tests
-
     [Fact]
     public void All_Currency_Symbols_Are_Non_Null()
     {
@@ -521,6 +499,4 @@ public class CurrencyCodeMapperTests
 
         dollarSymbols.Distinct().Count().ShouldBe(5, "All dollar variants should have unique symbols");
     }
-
-    #endregion
 }

@@ -1,4 +1,4 @@
-﻿# Validated Primitives
+# Validated Primitives
 
 [![Build & Test](https://github.com/robertmayordomo/Validated.PrimitivesV1/actions/workflows/build-test-publish.yml/badge.svg)](https://github.com/robertmayordomo/Validated.PrimitivesV1/actions/workflows/build-test-publish.yml)
 [![NuGet](https://img.shields.io/nuget/v/Validated.Primitives.svg)](https://www.nuget.org/packages/Validated.Primitives/)
@@ -144,6 +144,10 @@ dotnet add package Validated.Primitives
 - **`CreditCardNumber`** - Luhn-validated card numbers, 13-19 digits, rejects all-same-digit patterns
 - **`CreditCardSecurityNumber`** - CVV/CVC security codes, 3-4 digits
 - **`CreditCardExpiration`** - Card expiration date with automatic 2-digit year normalization
+
+
+### 🆔 Identification Numbers
+- **`SocialSecurityNumber`** - US Social Security Numbers with format validation (XXX-XX-XXXX), area/group/serial number validation, masking support (XXX-XX-6789), and advertising number detection
 
 ### 👤 Personal Information
 - **`HumanName`** - Individual name parts (first, middle, last), 1-50 characters, letters/hyphens/apostrophes/spaces

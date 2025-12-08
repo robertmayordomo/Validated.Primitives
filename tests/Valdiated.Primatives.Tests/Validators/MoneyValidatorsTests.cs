@@ -6,8 +6,6 @@ namespace Validated.Primitives.Tests.Validators;
 
 public class MoneyValidatorsTests
 {
-    #region NonNegative Tests
-
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -60,10 +58,6 @@ public class MoneyValidatorsTests
         result.IsValid.ShouldBeFalse();
         result.Errors[0].MemberName.ShouldBe("Money");
     }
-
-    #endregion
-
-    #region ValidDecimalPlaces Tests
 
     [Theory]
     [InlineData(0, 2)]
@@ -150,10 +144,6 @@ public class MoneyValidatorsTests
         // Assert
         result.IsValid.ShouldBeTrue();
     }
-
-    #endregion
-
-    #region Range Tests
 
     [Theory]
     [InlineData(50, 0, 100)]
@@ -264,10 +254,6 @@ public class MoneyValidatorsTests
         result.IsValid.ShouldBeTrue();
     }
 
-    #endregion
-
-    #region Integration Tests
-
     [Fact]
     public void GivenMultipleValidators_WhenValidValue_ThenAllShouldPass()
     {
@@ -304,6 +290,4 @@ public class MoneyValidatorsTests
         result1.IsValid.ShouldBeFalse();
         result2.IsValid.ShouldBeFalse();
     }
-
-    #endregion
 }

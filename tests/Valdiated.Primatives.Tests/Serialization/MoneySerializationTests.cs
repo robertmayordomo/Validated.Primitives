@@ -18,8 +18,6 @@ public class MoneySerializationTests
         };
     }
 
-    #region Basic Serialization Tests
-
     [Fact]
     public void Serialize_Money_Should_Include_Value_And_CurrencyCode()
     {
@@ -67,10 +65,6 @@ public class MoneySerializationTests
         deserialized.ShouldBe(original);
     }
 
-    #endregion
-
-    #region Currency Code Serialization Tests
-
     [Fact]
     public void Serialize_Money_With_Custom_CurrencyCode_Should_Preserve_It()
     {
@@ -98,10 +92,6 @@ public class MoneySerializationTests
         money.CurrencyCode.ShouldBe("EUR");
     }
 
-    #endregion
-
-    #region Null Handling Tests
-
     [Fact]
     public void Serialize_Null_Money_Should_Write_Null()
     {
@@ -127,10 +117,6 @@ public class MoneySerializationTests
         // Assert
         money.ShouldBeNull();
     }
-
-    #endregion
-
-    #region Invalid Data Tests
 
     [Fact]
     public void Deserialize_Invalid_Money_Should_Throw_JsonException()
@@ -166,10 +152,6 @@ public class MoneySerializationTests
             JsonSerializer.Deserialize<Money>(json, _options))
             .Message.ShouldContain("CurrencyCode is required");
     }
-
-    #endregion
-
-    #region Complex Object Tests
 
     [Fact]
     public void Serialize_Money_In_Object_Should_Work()
@@ -246,10 +228,6 @@ public class MoneySerializationTests
         list[1].CurrencyCode.ShouldBe("GBP");
     }
 
-    #endregion
-
-    #region Multiple Currency Tests
-
     [Theory]
     [InlineData(CountryCode.UnitedStates, "USD", 100.50)]
     [InlineData(CountryCode.UnitedKingdom, "GBP", 250.75)]
@@ -272,10 +250,6 @@ public class MoneySerializationTests
         deserialized.Value.ShouldBe(value);
         deserialized.CurrencyCode.ShouldBe(expectedCurrency);
     }
-
-    #endregion
-
-    #region Edge Cases
 
     [Fact]
     public void Serialize_Zero_Money_Should_Work()
@@ -337,10 +311,6 @@ public class MoneySerializationTests
         deserialized.Value.ShouldBe(0.05m);
     }
 
-    #endregion
-
-    #region Case Sensitivity Tests
-
     [Fact]
     public void Deserialize_With_Different_Casing_Should_Work()
     {
@@ -358,8 +328,6 @@ public class MoneySerializationTests
         money.Value.ShouldBe(100m);
         money.CurrencyCode.ShouldBe("USD");
     }
-
-    #endregion
 
     private class ProductObject
     {

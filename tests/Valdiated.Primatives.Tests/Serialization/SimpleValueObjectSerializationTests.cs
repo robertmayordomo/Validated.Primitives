@@ -13,8 +13,6 @@ public class SimpleValueObjectSerializationTests
         WriteIndented = false
     };
 
-    #region AddressLine Tests
-
     [Fact]
     public void Serialize_AddressLine_Should_Write_Value_As_String()
     {
@@ -56,10 +54,6 @@ public class SimpleValueObjectSerializationTests
         deserialized.ShouldBe(original);
     }
 
-    #endregion
-
-    #region HumanName Tests
-
     [Fact]
     public void Serialize_HumanName_Should_Write_Value_As_String()
     {
@@ -100,10 +94,6 @@ public class SimpleValueObjectSerializationTests
         // Assert
         deserialized.ShouldBe(original);
     }
-
-    #endregion
-
-    #region IpAddress Tests
 
     [Fact]
     public void Serialize_IpAddress_Should_Write_Value_As_String()
@@ -161,10 +151,6 @@ public class SimpleValueObjectSerializationTests
         deserialized.Value.ShouldBe(original!.Value);
     }
 
-    #endregion
-
-    #region WebsiteUrl Tests
-
     [Fact]
     public void Serialize_WebsiteUrl_Should_Write_Value_As_String()
     {
@@ -205,10 +191,6 @@ public class SimpleValueObjectSerializationTests
         // Assert
         deserialized.ShouldBe(original);
     }
-
-    #endregion
-
-    #region City Tests
 
     [Fact]
     public void Serialize_City_Should_Write_Value_As_String()
@@ -251,10 +233,6 @@ public class SimpleValueObjectSerializationTests
         deserialized.ShouldBe(original);
     }
 
-    #endregion
-
-    #region StateProvince Tests
-
     [Fact]
     public void Serialize_StateProvince_Should_Write_Value_As_String()
     {
@@ -295,10 +273,6 @@ public class SimpleValueObjectSerializationTests
         // Assert
         deserialized.ShouldBe(original);
     }
-
-    #endregion
-
-    #region Complex Object Tests
 
     [Fact]
     public void Serialize_Object_With_Multiple_ValueObjects_Should_Work()
@@ -345,6 +319,4 @@ public class SimpleValueObjectSerializationTests
         public City City { get; set; } = null!;
         public StateProvince State { get; set; } = null!;
     }
-
-    #endregion
 }
