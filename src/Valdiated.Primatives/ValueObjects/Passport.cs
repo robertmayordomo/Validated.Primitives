@@ -23,7 +23,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Reference: ICAO Document 9303 - Machine Readable Travel Documents
 /// </summary>
 [JsonConverter(typeof(PassportConverter))]
-public sealed record Passport : ValidatedValueObject<string>
+public sealed record Passport : ValidatedPrimitive<string>
 {
     /// <summary>
     /// Gets the country that issued this passport.

@@ -4,7 +4,7 @@ using Validated.Primitives.ValueObjects;
 
 namespace Validated.Primitives.Tests.Core;
 
-public class ValidatedValueObjectTests
+public class ValidatedPrimitiveTests
 {
     [Fact]
     public void ImplicitConversion_EmailAddress_To_String()

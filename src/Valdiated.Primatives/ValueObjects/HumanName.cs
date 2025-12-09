@@ -12,7 +12,7 @@ namespace Validated.Primitives.ValueObjects;
 /// and be no more than 50 characters.
 /// </summary>
 [JsonConverter(typeof(HumanNameConverter))]
-public sealed record HumanName : ValidatedValueObject<string>
+public sealed record HumanName : ValidatedPrimitive<string>
 {
     private HumanName(string value, string propertyName = "Name") : base(value?.Trim() ?? string.Empty)
     {

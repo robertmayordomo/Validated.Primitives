@@ -6,7 +6,7 @@ namespace Validated.Primitives.Serialization;
 /// JSON converter for FutureDate value objects.
 /// Converts between FutureDate and DateTime for JSON serialization.
 /// </summary>
-public class FutureDateConverter : ValidatedValueObjectConverter<FutureDate, DateTime>
+public class FutureDateConverter : ValidatedPrimitiveConverter<FutureDate, DateTime>
 {
     /// <summary>
     /// Initializes a new instance of the FutureDateConverter class.

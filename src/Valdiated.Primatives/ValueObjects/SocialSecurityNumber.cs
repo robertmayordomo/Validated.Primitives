@@ -12,7 +12,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Supports formatting with or without dashes and provides masking for security.
 /// </summary>
 [JsonConverter(typeof(SocialSecurityNumberConverter))]
-public sealed record SocialSecurityNumber : ValidatedValueObject<string>
+public sealed record SocialSecurityNumber : ValidatedPrimitive<string>
 {
     private SocialSecurityNumber(string value, string propertyName = "SocialSecurityNumber") 
         : base(ExtractDigits(value))

@@ -22,7 +22,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Note: This validates format only, not whether the license is actually issued or currently valid.
 /// </summary>
 [JsonConverter(typeof(DrivingLicenseNumberConverter))]
-public sealed record DrivingLicenseNumber : ValidatedValueObject<string>
+public sealed record DrivingLicenseNumber : ValidatedPrimitive<string>
 {
     /// <summary>
     /// Gets the country that issued this driving license.

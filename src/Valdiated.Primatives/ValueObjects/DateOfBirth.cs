@@ -7,7 +7,7 @@ using Validated.Primitives.Validators;
 namespace Validated.Primitives.ValueObjects;
 
 [JsonConverter(typeof(DateOfBirthConverter))]
-public sealed record DateOfBirth : ValidatedValueObject<DateTime>
+public sealed record DateOfBirth : ValidatedPrimitive<DateTime>
 {
     private DateOfBirth(DateTime value, string propertyName = "DateOfBirth") : base(value)
     {

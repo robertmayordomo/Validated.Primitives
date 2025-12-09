@@ -11,7 +11,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Uses decimal for representing currency amounts (e.g., 10.50 USD).
 /// </summary>
 [JsonConverter(typeof(MoneyConverter))]
-public sealed record Money : ValidatedValueObject<decimal>
+public sealed record Money : ValidatedPrimitive<decimal>
 {
     /// <summary>
     /// Gets the ISO 4217 currency code (e.g., USD, EUR, GBP).

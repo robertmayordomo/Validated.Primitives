@@ -29,7 +29,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Reference: ISO 9362:2014 - Banking — Banking telecommunication messages — Business identifier code (BIC)
 /// </summary>
 [JsonConverter(typeof(SwiftCodeConverter))]
-public sealed record SwiftCode : ValidatedValueObject<string>
+public sealed record SwiftCode : ValidatedPrimitive<string>
 {
     private SwiftCode(string value, bool allowTestCodes, string propertyName = "SwiftCode") : base(value)
     {

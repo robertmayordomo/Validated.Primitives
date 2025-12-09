@@ -5,7 +5,7 @@ using Validated.Primitives.Validators;
 
 namespace Validated.Primitives.ValueObjects;
 
-public sealed record BetweenDatesSelection : ValidatedValueObject<DateTime>
+public sealed record BetweenDatesSelection : ValidatedPrimitive<DateTime>
 {
     public DateRange Range { get; }
 

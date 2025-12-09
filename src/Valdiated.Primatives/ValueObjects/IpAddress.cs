@@ -7,7 +7,7 @@ using Validated.Primitives.Validators;
 namespace Validated.Primitives.ValueObjects;
 
 [JsonConverter(typeof(IpAddressConverter))]
-public sealed record IpAddress : ValidatedValueObject<string>
+public sealed record IpAddress : ValidatedPrimitive<string>
 {
     private IpAddress(string value, string propertyName = "IpAddress") : base(value)
     {

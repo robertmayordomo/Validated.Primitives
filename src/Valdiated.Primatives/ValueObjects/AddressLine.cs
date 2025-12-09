@@ -11,7 +11,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Maximum length is 200 characters. Can be null or empty.
 /// </summary>
 [JsonConverter(typeof(AddressLineConverter))]
-public sealed record AddressLine : ValidatedValueObject<string>
+public sealed record AddressLine : ValidatedPrimitive<string>
 {
     private AddressLine(string value, string propertyName = "AddressLine") : base(value?.Trim() ?? string.Empty)
     {

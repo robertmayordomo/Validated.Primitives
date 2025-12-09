@@ -6,7 +6,7 @@ namespace Validated.Primitives.Serialization;
 /// JSON converter for DateOfBirth value objects.
 /// Converts between DateOfBirth and DateTime for JSON serialization.
 /// </summary>
-public class DateOfBirthConverter : ValidatedValueObjectConverter<DateOfBirth, DateTime>
+public class DateOfBirthConverter : ValidatedPrimitiveConverter<DateOfBirth, DateTime>
 {
     /// <summary>
     /// Initializes a new instance of the DateOfBirthConverter class.

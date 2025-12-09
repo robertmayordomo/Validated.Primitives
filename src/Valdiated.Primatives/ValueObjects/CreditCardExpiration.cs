@@ -9,7 +9,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated credit card expiration date.
 /// Validates that the month and year are valid and that the date is not expired.
 /// </summary>
-public sealed record CreditCardExpiration : ValidatedValueObject<(int Month, int Year)>
+public sealed record CreditCardExpiration : ValidatedPrimitive<(int Month, int Year)>
 {
     /// <summary>
     /// Gets the expiration month (1-12).

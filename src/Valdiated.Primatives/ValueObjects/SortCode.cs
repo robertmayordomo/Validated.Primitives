@@ -12,7 +12,7 @@ namespace Validated.Primitives.ValueObjects;
 /// UK/Ireland format: 6 digits, often displayed as XX-XX-XX.
 /// </summary>
 [JsonConverter(typeof(SortCodeConverter))]
-public sealed record SortCode : ValidatedValueObject<string>
+public sealed record SortCode : ValidatedPrimitive<string>
 {
     /// <summary>
     /// Gets the country code for which this sort code is validated.

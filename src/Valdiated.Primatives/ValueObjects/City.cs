@@ -11,7 +11,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Required field with a maximum length of 100 characters.
 /// </summary>
 [JsonConverter(typeof(CityConverter))]
-public sealed record City : ValidatedValueObject<string>
+public sealed record City : ValidatedPrimitive<string>
 {
     private City(string value, string propertyName = "City") : base(value?.Trim() ?? string.Empty)
     {

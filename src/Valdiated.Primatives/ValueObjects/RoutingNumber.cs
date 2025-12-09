@@ -16,7 +16,7 @@ namespace Validated.Primitives.ValueObjects;
 /// - C: Check digit (last digit, calculated using ABA algorithm)
 /// </summary>
 [JsonConverter(typeof(RoutingNumberConverter))]
-public sealed record RoutingNumber : ValidatedValueObject<string>
+public sealed record RoutingNumber : ValidatedPrimitive<string>
 {
     private RoutingNumber(string value, string propertyName = "RoutingNumber") : base(value)
     {

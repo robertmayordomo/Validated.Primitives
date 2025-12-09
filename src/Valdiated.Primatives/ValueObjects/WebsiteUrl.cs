@@ -7,7 +7,7 @@ using Validated.Primitives.Validators;
 namespace Validated.Primitives.ValueObjects;
 
 [JsonConverter(typeof(WebsiteUrlConverter))]
-public sealed record WebsiteUrl : ValidatedValueObject<string>
+public sealed record WebsiteUrl : ValidatedPrimitive<string>
 {
     private WebsiteUrl(string value, string propertyName = "Url") : base(value)
     {

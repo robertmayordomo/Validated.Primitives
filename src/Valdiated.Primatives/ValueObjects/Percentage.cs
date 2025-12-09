@@ -10,7 +10,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated percentage value (0-100) with configurable decimal places (max 3).
 /// </summary>
 [JsonConverter(typeof(PercentageConverter))]
-public sealed record Percentage : ValidatedValueObject<decimal>
+public sealed record Percentage : ValidatedPrimitive<decimal>
 {
     /// <summary>
     /// Gets the number of decimal places allowed (0-3).

@@ -11,7 +11,7 @@ namespace Validated.Primitives.ValueObjects;
 /// This prevents floating-point precision issues in financial calculations.
 /// </summary>
 [JsonConverter(typeof(SmallUnitMoneyConverter))]
-public sealed record SmallUnitMoney : ValidatedValueObject<uint>
+public sealed record SmallUnitMoney : ValidatedPrimitive<uint>
 {
     /// <summary>
     /// Gets the country code associated with the currency.

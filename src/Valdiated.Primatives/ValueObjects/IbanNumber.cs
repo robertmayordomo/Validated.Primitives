@@ -27,7 +27,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Reference: ISO 13616:2020 - Financial services — International bank account number (IBAN)
 /// </summary>
 [JsonConverter(typeof(IbanNumberConverter))]
-public sealed record IbanNumber : ValidatedValueObject<string>
+public sealed record IbanNumber : ValidatedPrimitive<string>
 {
     /// <summary>
     /// Gets the detected account number type (IBAN or BBAN).

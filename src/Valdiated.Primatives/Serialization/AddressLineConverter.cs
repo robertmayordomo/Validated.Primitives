@@ -6,7 +6,7 @@ namespace Validated.Primitives.Serialization;
 /// JSON converter for AddressLine value objects.
 /// Converts between AddressLine and string for JSON serialization.
 /// </summary>
-public class AddressLineConverter : ValidatedValueObjectConverter<AddressLine, string>
+public class AddressLineConverter : ValidatedPrimitiveConverter<AddressLine, string>
 {
     /// <summary>
     /// Initializes a new instance of the AddressLineConverter class.

@@ -6,7 +6,7 @@ namespace Validated.Primitives.Serialization;
 /// JSON converter for StateProvince value objects.
 /// Converts between StateProvince and string for JSON serialization.
 /// </summary>
-public class StateProvinceConverter : ValidatedValueObjectConverter<StateProvince, string>
+public class StateProvinceConverter : ValidatedPrimitiveConverter<StateProvince, string>
 {
     /// <summary>
     /// Initializes a new instance of the StateProvinceConverter class.

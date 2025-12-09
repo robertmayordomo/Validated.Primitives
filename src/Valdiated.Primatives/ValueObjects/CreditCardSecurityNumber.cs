@@ -10,7 +10,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated credit card security number (CVV/CVC).
 /// Stores only the digits and validates the length.
 /// </summary>
-public sealed record CreditCardSecurityNumber : ValidatedValueObject<string>
+public sealed record CreditCardSecurityNumber : ValidatedPrimitive<string>
 {
     private CreditCardSecurityNumber(string input, string propertyName = "SecurityNumber")
         : base(ExtractDigits(input))

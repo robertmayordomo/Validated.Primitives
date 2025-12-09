@@ -12,7 +12,7 @@ namespace Validated.Primitives.ValueObjects;
 /// identifies the country based on format patterns.
 /// </summary>
 [JsonConverter(typeof(PostalCodeConverter))]
-public sealed record PostalCode : ValidatedValueObject<string>
+public sealed record PostalCode : ValidatedPrimitive<string>
 {
     /// <summary>
     /// Gets the detected country code based on the postal code format.

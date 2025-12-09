@@ -13,7 +13,7 @@ namespace Validated.Primitives.ValueObjects;
 /// - Country-specific formats for UK, US, Australia, Canada, Japan, and others
 /// </summary>
 [JsonConverter(typeof(BankAccountNumberConverter))]
-public sealed record BankAccountNumber : ValidatedValueObject<string>
+public sealed record BankAccountNumber : ValidatedPrimitive<string>
 {
     /// <summary>
     /// Gets the country code for which this account number is validated.

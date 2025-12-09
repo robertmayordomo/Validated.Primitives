@@ -7,7 +7,7 @@ using Validated.Primitives.Validators;
 namespace Validated.Primitives.ValueObjects;
 
 [JsonConverter(typeof(EmailAddressConverter))]
-public sealed record EmailAddress : ValidatedValueObject<string>
+public sealed record EmailAddress : ValidatedPrimitive<string>
 {
     private EmailAddress(string value, string propertyName = "Email") : base(value)
     {

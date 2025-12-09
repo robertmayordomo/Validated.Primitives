@@ -8,7 +8,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Represents a validated credit card number.
 /// Stores only the digits and validates using the Luhn algorithm.
 /// </summary>
-public sealed record CreditCardNumber : ValidatedValueObject<string>
+public sealed record CreditCardNumber : ValidatedPrimitive<string>
 {
     private CreditCardNumber(string input, string propertyName = "CreditCardNumber") 
         : base(ExtractDigits(input))

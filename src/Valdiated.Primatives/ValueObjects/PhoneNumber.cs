@@ -11,7 +11,7 @@ namespace Validated.Primitives.ValueObjects;
 /// Supports phone number formats from countries worldwide.
 /// </summary>
 [JsonConverter(typeof(PhoneNumberConverter))]
-public sealed record PhoneNumber : ValidatedValueObject<string>
+public sealed record PhoneNumber : ValidatedPrimitive<string>
 {
     /// <summary>
     /// Gets the country code for the phone number.

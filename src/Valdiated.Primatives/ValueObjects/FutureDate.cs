@@ -7,7 +7,7 @@ using Validated.Primitives.Validators;
 namespace Validated.Primitives.ValueObjects;
 
 [JsonConverter(typeof(FutureDateConverter))]
-public sealed record FutureDate : ValidatedValueObject<DateTime>
+public sealed record FutureDate : ValidatedPrimitive<DateTime>
 {
     private FutureDate(DateTime value, string propertyName = "FutureDate") : base(value)
     {
