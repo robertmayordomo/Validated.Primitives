@@ -26,6 +26,7 @@ dotnet add package Validated.Primitives
 - Date/time value objects (DateOfBirth, FutureDate, date ranges)
 - Financial primitives (Money, Percentage, CurrencyCode)
 - Credit card primitives (CreditCardNumber, CreditCardSecurityNumber, CreditCardExpiration)
+- **Banking primitives** (SwiftCode/BIC, RoutingNumber, BankAccountNumber, SortCode) - [See Banking Documentation](BANKING_VALUE_OBJECTS.md)
 - Text primitives (HumanName, AddressLine, City, StateProvince)
 - Validation framework and error handling
 - JSON serialization support
@@ -144,7 +145,10 @@ dotnet add package Validated.Primitives
 - **`CreditCardNumber`** - Luhn-validated card numbers, 13-19 digits, rejects all-same-digit patterns
 - **`CreditCardSecurityNumber`** - CVV/CVC security codes, 3-4 digits
 - **`CreditCardExpiration`** - Card expiration date with automatic 2-digit year normalization
-
+- **`SwiftCode`** - SWIFT/BIC codes for international bank transfers
+- **`RoutingNumber`** - Bank routing numbers (ABA numbers) for US banks
+- **`BankAccountNumber`** - International bank account numbers (IBAN) with country-specific validation
+- **`SortCode`** - Bank sort codes for UK and Ireland
 
 ### 🆔 Identification Numbers
 - **`SocialSecurityNumber`** - US Social Security Numbers with format validation (XXX-XX-XXXX), area/group/serial number validation, masking support (XXX-XX-6789), and advertising number detection
