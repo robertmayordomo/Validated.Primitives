@@ -145,8 +145,18 @@ dotnet add package Validated.Primitives
 - **`CreditCardSecurityNumber`** - CVV/CVC security codes, 3-4 digits
 - **`CreditCardExpiration`** - Card expiration date with automatic 2-digit year normalization
 
+### 🏦 Banking
+- **`BankAccountNumber`** - Country-specific bank account number validation (supports IBAN and domestic formats)
+- **`IbanNumber`** - International Bank Account Number (IBAN) with ISO 13616 validation, mod-97 checksum, 70+ countries
+- **`RoutingNumber`** - US ABA routing number, 9 digits with checksum validation
+- **`SortCode`** - UK/Ireland bank sort codes, 6 digits (XX-XX-XX format)
+- **`SwiftCode`** - SWIFT/BIC codes for international wire transfers (ISO 9362), 8 or 11 characters
+
 ### 👤 Personal Information
 - **`HumanName`** - Individual name parts (first, middle, last), 1-50 characters, letters/hyphens/apostrophes/spaces
+- **`SocialSecurityNumber`** - US Social Security Number with format validation and area/group/serial number checks
+- **`Passport`** - Country-specific passport number validation for 30+ countries (ICAO Document 9303 standards)
+- **`DrivingLicenseNumber`** - Country-specific driving license number validation for 25+ countries
 
 ### API Integration Example
 
