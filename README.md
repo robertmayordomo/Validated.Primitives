@@ -130,6 +130,7 @@ dotnet add package Validated.Primitives
 
 ### 🌐 Network
 - **`IpAddress`** - Valid IPv4 or IPv6 addresses
+- **`MacAddress`** - MAC address validation supporting multiple formats (colon `AA:BB:CC:DD:EE:FF`, hyphen `AA-BB-CC-DD-EE-FF`, dot-separated Cisco `AABB.CCDD.EEFF`, continuous `AABBCCDDEEFF`), multicast/broadcast/all-zeros detection, OUI/NIC extraction, and address type identification (locally/universally administered, unicast/multicast)
 
 ### 📅 Date & Time
 - **`DateOfBirth`** - Must be in the past, cannot be future date
