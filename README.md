@@ -26,7 +26,8 @@ dotnet add package Validated.Primitives
 - Date/time value objects (DateOfBirth, FutureDate, date ranges)
 - Financial primitives (Money, Percentage, CurrencyCode)
 - Credit card primitives (CreditCardNumber, CreditCardSecurityNumber, CreditCardExpiration)
-- **Banking primitives** (SwiftCode/BIC, RoutingNumber, BankAccountNumber, SortCode) - [See Banking Documentation](BANKING_VALUE_OBJECTS.md)
+- **Banking primitives** (SwiftCode/BIC, RoutingNumber, IbanNumber, BankAccountNumber, SortCode, Passport) - [See Banking Documentation](BANKING_VALUE_OBJECTS.md)
+- **Identity primitives** (Passport with 30+ country formats)
 - Text primitives (HumanName, AddressLine, City, StateProvince)
 - Validation framework and error handling
 - JSON serialization support
@@ -45,6 +46,7 @@ dotnet add package Validated.Primitives.Domain
 - **Address** - Physical mailing address with country-specific postal code validation
 - **ContactInformation** - Email, primary/secondary phone, optional website
 - **CreditCardDetails** - Complete payment card (number, CVV, expiration) with masking and expiration checking
+- **BankingDetails** - Complete banking information (account number, SWIFT, routing number, sort code) with country-specific validation
 
 **Think of it as:**
 - `Validated.Primitives` = LEGO bricks (EmailAddress, PhoneNumber, PostalCode)
@@ -277,6 +279,7 @@ if (addressResult.IsValid && nameResult.IsValid &&
 - `Address` - Complete mailing address with country-specific validation
 - `ContactInformation` - Email + Phones + Website
 - `CreditCardDetails` - CardNumber + CVV + Expiration with masking
+- `BankingDetails` - AccountNumber + SWIFT + RoutingNumber + SortCode with country-specific validation
 
 ## ??? Builder Pattern for Complex Types
 
@@ -370,6 +373,48 @@ else
 }
 ```
 
+### BankingDetailsBuilder
+
+Build banking details with required fields and optional convenience methods for SWIFT, routing number, and sort code:
+
+```csharp
+using Validated.Primitives.Domain.Builders;
+
+// Basic banking details
+var (result, bankingDetails) = new BankingDetailsBuilder()
+    .WithCountry(CountryCode.UnitedStates)
+    .WithAccountNumber("123456789")
+    .Build();
+
+// Banking details with SWIFT code (international)
+var (result, bankingDetails) = new BankingDetailsBuilder()
+    .WithCountry(CountryCode.Germany)
+    .WithAccountNumber("DE89370400440532013000")
+    .WithSwiftCode("DEUTDEDBFRA")
+    .Build();
+
+// Banking details with routing number (US) and sort code (UK/Ireland)
+var (result, bankingDetails) = new BankingDetailsBuilder()
+    .WithCountry(CountryCode.UnitedKingdom)
+    .WithAccountNumber("GB29NWBK60161331926819")
+    .WithRoutingNumber("123456789")
+    .WithSortCode("601613")
+    .Build();
+
+if (result.IsValid)
+{
+    Console.WriteLine($"Account: {bankingDetails.AccountNumber}");
+    Console.WriteLine($"SWIFT: {bankingDetails.SwiftCode}");
+    Console.WriteLine($"Routing: {bankingDetails.RoutingNumber}");
+    Console.WriteLine($"Sort Code: {bankingDetails.SortCode}");
+}
+else
+{
+    // Handle validation errors
+    Console.WriteLine(result.ToBulletList());
+}
+```
+
 ### Builder Features
 
 **? Key Benefits:**
@@ -445,3 +490,4 @@ public class AddressesController : ControllerBase
 **Available Builders:**
 - `AddressBuilder` - Required: street, city, country, postalCode | Optional: addressLine2, stateProvince
 - `CreditCardBuilder` - Required: cardNumber, securityCode, expiration | Multiple expiration formats supported
+- `BankingDetailsBuilder` - Required: country, accountNumber | Optional: swiftCode, routingNumber (USA), sortCode (UK/Ireland) | Convenience methods for US, UK, and international banking
