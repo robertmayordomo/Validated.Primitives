@@ -1,7 +1,5 @@
 using Shouldly;
-using Validated.Primitives.Domain;
 using Validated.Primitives.ValueObjects;
-using Xunit;
 
 namespace Validated.Primitives.Domain.Tests;
 
@@ -12,37 +10,29 @@ public class BankingDetailsTests
     [Fact]
     public void TryCreate_WithValidUsBanking_ReturnsSuccess()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("123456789", CountryCode.UnitedStates);
-        var (_, routing) = RoutingNumber.TryCreate("021000021");
-        var (_, swift) = SwiftCode.TryCreate("CHASUS33");
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.UnitedStates,
-            account!,
-            swift,
-            routing);
+            "123456789",
+            "CHASUS33",
+            "021000021");
 
         // Assert
         result.IsValid.ShouldBeTrue();
         banking.ShouldNotBeNull();
         banking!.Country.ShouldBe(CountryCode.UnitedStates);
-        banking.AccountNumber.ShouldBe(account);
-        banking.RoutingNumber.ShouldBe(routing);
-        banking.SwiftCode.ShouldBe(swift);
+        banking.AccountNumber.Value.ShouldBe("123456789");
+        banking.RoutingNumber!.ToDigitsOnly().ShouldBe("021000021");
+        banking.SwiftCode!.Value.ShouldBe("CHASUS33");
     }
 
     [Fact]
     public void TryCreate_WithUsBankingWithoutRoutingNumber_ReturnsFailure()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("123456789", CountryCode.UnitedStates);
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.UnitedStates,
-            account!);
+            "123456789");
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -53,17 +43,12 @@ public class BankingDetailsTests
     [Fact]
     public void TryCreate_WithUsBankingAndSortCode_ReturnsFailure()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("123456789", CountryCode.UnitedStates);
-        var (_, routing) = RoutingNumber.TryCreate("021000021");
-        var (_, sortCode) = SortCode.TryCreate(CountryCode.UnitedKingdom, "123456");
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.UnitedStates,
-            account!,
-            sortCode: sortCode,
-            routingNumber: routing);
+            "123456789",
+            routingNumber: "021000021",
+            sortCode: "123456");
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -78,37 +63,29 @@ public class BankingDetailsTests
     [Fact]
     public void TryCreate_WithValidUkBanking_ReturnsSuccess()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("12345678", CountryCode.UnitedKingdom);
-        var (_, sortCode) = SortCode.TryCreate(CountryCode.UnitedKingdom, "123456");
-        var (_, swift) = SwiftCode.TryCreate("BARCGB22");
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.UnitedKingdom,
-            account!,
-            swift,
-            sortCode: sortCode);
+            "12345678",
+            "BARCGB22",
+            sortCode: "123456");
 
         // Assert
         result.IsValid.ShouldBeTrue();
         banking.ShouldNotBeNull();
         banking!.Country.ShouldBe(CountryCode.UnitedKingdom);
-        banking.AccountNumber.ShouldBe(account);
-        banking.SortCode.ShouldBe(sortCode);
-        banking.SwiftCode.ShouldBe(swift);
+        banking.AccountNumber.Value.ShouldBe("12345678");
+        banking.SortCode!.ToDigitsOnly().ShouldBe("123456");
+        banking.SwiftCode!.Value.ShouldBe("BARCGB22");
     }
 
     [Fact]
     public void TryCreate_WithUkBankingWithoutSortCode_ReturnsFailure()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("12345678", CountryCode.UnitedKingdom);
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.UnitedKingdom,
-            account!);
+            "12345678");
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -119,17 +96,12 @@ public class BankingDetailsTests
     [Fact]
     public void TryCreate_WithUkBankingAndRoutingNumber_ReturnsFailure()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("12345678", CountryCode.UnitedKingdom);
-        var (_, sortCode) = SortCode.TryCreate(CountryCode.UnitedKingdom, "123456");
-        var (_, routing) = RoutingNumber.TryCreate("021000021");
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.UnitedKingdom,
-            account!,
-            sortCode: sortCode,
-            routingNumber: routing);
+            "12345678",
+            sortCode: "123456",
+            routingNumber: "021000021");
 
         // Assert
         result.IsValid.ShouldBeFalse();
@@ -144,22 +116,18 @@ public class BankingDetailsTests
     [Fact]
     public void TryCreate_WithValidIbanBanking_ReturnsSuccess()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("DE89370400440532013000");
-        var (_, swift) = SwiftCode.TryCreate("DEUTDEFF");
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.Germany,
-            account!,
-            swift);
+            "DE89370400440532013000",
+            "DEUTDEFF");
 
         // Assert
         result.IsValid.ShouldBeTrue();
         banking.ShouldNotBeNull();
         banking!.Country.ShouldBe(CountryCode.Germany);
-        banking.AccountNumber.ShouldBe(account);
-        banking.SwiftCode.ShouldBe(swift);
+        banking.AccountNumber.ToNormalizedString().ShouldBe("DE89370400440532013000");
+        banking.SwiftCode!.Value.ShouldBe("DEUTDEFF");
         banking.UsesIban.ShouldBeTrue();
         banking.SupportsInternationalTransfers.ShouldBeTrue();
     }
@@ -167,13 +135,10 @@ public class BankingDetailsTests
     [Fact]
     public void TryCreate_WithIbanWithoutSwiftCode_ReturnsSuccess()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("FR1420041010050500013M02606");
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.France,
-            account!);
+            "FR1420041010050500013M02606");
 
         // Assert
         result.IsValid.ShouldBeTrue();
@@ -188,10 +153,8 @@ public class BankingDetailsTests
     [Fact]
     public void SupportsInternationalTransfers_WithSwiftCode_ReturnsTrue()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("DE89370400440532013000");
-        var (_, swift) = SwiftCode.TryCreate("DEUTDEFF");
-        var (_, banking) = BankingDetails.TryCreate(CountryCode.Germany, account!, swift);
+        // Act
+        var (_, banking) = BankingDetails.TryCreate(CountryCode.Germany, "DE89370400440532013000", "DEUTDEFF");
 
         // Assert
         banking!.SupportsInternationalTransfers.ShouldBeTrue();
@@ -200,10 +163,8 @@ public class BankingDetailsTests
     [Fact]
     public void SupportsInternationalTransfers_WithoutSwiftCode_ReturnsFalse()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("12345678", CountryCode.UnitedKingdom);
-        var (_, sortCode) = SortCode.TryCreate(CountryCode.UnitedKingdom, "123456");
-        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedKingdom, account!, sortCode: sortCode);
+        // Act
+        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedKingdom, "12345678", sortCode: "123456");
 
         // Assert
         banking!.SupportsInternationalTransfers.ShouldBeFalse();
@@ -212,9 +173,8 @@ public class BankingDetailsTests
     [Fact]
     public void UsesIban_WithIbanAccount_ReturnsTrue()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("DE89370400440532013000");
-        var (_, banking) = BankingDetails.TryCreate(CountryCode.Germany, account!);
+        // Act
+        var (_, banking) = BankingDetails.TryCreate(CountryCode.Germany, "DE89370400440532013000");
 
         // Assert
         banking!.UsesIban.ShouldBeTrue();
@@ -223,10 +183,8 @@ public class BankingDetailsTests
     [Fact]
     public void UsesIban_WithBbanAccount_ReturnsFalse()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("123456789", CountryCode.UnitedStates);
-        var (_, routing) = RoutingNumber.TryCreate("021000021");
-        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedStates, account!, routingNumber: routing);
+        // Act
+        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedStates, "123456789", routingNumber: "021000021");
 
         // Assert
         banking!.UsesIban.ShouldBeFalse();
@@ -235,9 +193,8 @@ public class BankingDetailsTests
     [Fact]
     public void MaskedAccountNumber_ReturnsMaskedValue()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("DE89370400440532013000");
-        var (_, banking) = BankingDetails.TryCreate(CountryCode.Germany, account!);
+        // Act
+        var (_, banking) = BankingDetails.TryCreate(CountryCode.Germany, "DE89370400440532013000");
 
         // Assert
         banking!.MaskedAccountNumber.ShouldBe("******************3000");
@@ -250,16 +207,11 @@ public class BankingDetailsTests
     [Fact]
     public void ToString_WithAllComponents_FormatsCorrectly()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("123456789", CountryCode.UnitedStates);
-        var (_, routing) = RoutingNumber.TryCreate("021000021");
-        var (_, swift) = SwiftCode.TryCreate("CHASUS33");
-        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedStates, account!, swift, routing);
-
         // Act
-        var result = banking!.ToString();
+        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedStates, "123456789", "CHASUS33", "021000021");
 
         // Assert
+        var result = banking!.ToString();
         result.ShouldContain("SWIFT: CHASUS33");
         result.ShouldContain("Routing: 0210-0002-1");
         result.ShouldContain("Account:");
@@ -269,15 +221,11 @@ public class BankingDetailsTests
     [Fact]
     public void ToString_WithUkBanking_FormatsCorrectly()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("12345678", CountryCode.UnitedKingdom);
-        var (_, sortCode) = SortCode.TryCreate(CountryCode.UnitedKingdom, "123456");
-        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedKingdom, account!, sortCode: sortCode);
-
         // Act
-        var result = banking!.ToString();
+        var (_, banking) = BankingDetails.TryCreate(CountryCode.UnitedKingdom, "12345678", sortCode: "123456");
 
         // Assert
+        var result = banking!.ToString();
         result.ShouldContain("Sort Code: 12-34-56");
         result.ShouldContain("Account:");
         result.ShouldContain("(UnitedKingdom)");
@@ -304,13 +252,10 @@ public class BankingDetailsTests
     [Fact]
     public void TryCreate_WithIrelandBanking_RequiresSortCode()
     {
-        // Arrange
-        var (_, account) = IbanNumber.TryCreate("12345678", CountryCode.Ireland);
-
         // Act
         var (result, banking) = BankingDetails.TryCreate(
             CountryCode.Ireland,
-            account!);
+            "12345678");
 
         // Assert
         result.IsValid.ShouldBeFalse();

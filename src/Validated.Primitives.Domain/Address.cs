@@ -59,12 +59,12 @@ public sealed record Address
         var result = ValidationResult.Success();
 
         // Validate street using AddressLine primitive
-        var (streetResult, streetValue) = AddressLine.TryCreate(street, "Street");
+        var (streetResult, streetValue) = AddressLine.TryCreate(street, nameof(Street));
         if (!streetResult.IsValid)
         {
             result.Merge(streetResult);
         }
-        
+
         // Street is required - check if it's null after validation
         if (streetValue == null)
         {
@@ -75,7 +75,7 @@ public sealed record Address
         AddressLine? line2Value = null;
         if (!string.IsNullOrWhiteSpace(addressLine2))
         {
-            var (line2Result, line2Val) = AddressLine.TryCreate(addressLine2, "AddressLine2");
+            var (line2Result, line2Val) = AddressLine.TryCreate(addressLine2, nameof(AddressLine2));
             if (!line2Result.IsValid)
             {
                 result.Merge(line2Result);
@@ -84,7 +84,7 @@ public sealed record Address
         }
 
         // Validate city using City primitive
-        var (cityResult, cityValue) = City.TryCreate(city, "City");
+        var (cityResult, cityValue) = City.TryCreate(city, nameof(City));
         if (!cityResult.IsValid)
         {
             result.Merge(cityResult);
@@ -94,7 +94,7 @@ public sealed record Address
         StateProvince? stateProvinceValue = null;
         if (!string.IsNullOrWhiteSpace(stateProvince))
         {
-            var (stateResult, stateVal) = StateProvince.TryCreate(stateProvince, "StateProvince");
+            var (stateResult, stateVal) = StateProvince.TryCreate(stateProvince, nameof(StateProvince));
             if (!stateResult.IsValid)
             {
                 result.Merge(stateResult);
@@ -110,7 +110,7 @@ public sealed record Address
         }
         else
         {
-            var (postalResult, postalVal) = PostalCode.TryCreate(country.Value, postalCode, "PostalCode");
+            var (postalResult, postalVal) = PostalCode.TryCreate(country.Value, postalCode, nameof(PostalCode));
             if (!postalResult.IsValid)
             {
                 result.Merge(postalResult);
@@ -141,19 +141,19 @@ public sealed record Address
     public override string ToString()
     {
         var parts = new List<string> { Street.Value };
-        
+
         if (AddressLine2 != null)
         {
             parts.Add(AddressLine2.Value);
         }
-        
+
         parts.Add(City.Value);
-        
+
         if (StateProvince != null)
         {
             parts.Add(StateProvince.Value);
         }
-        
+
         parts.Add(PostalCode.Value);
         parts.Add(PostalCode.GetCountryName());
 

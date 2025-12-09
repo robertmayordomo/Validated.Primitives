@@ -143,91 +143,44 @@ public class BankingDetailsBuilder
     {
         var errors = new List<ValidationError>();
 
-        // Validate and create account number first (might give us country)
-        IbanNumber? accountNumber = null;
+        // Validate country is provided first
+        if (!_country.HasValue)
+        {
+            // Try to auto-detect from IBAN if account number looks like IBAN
+            if (!string.IsNullOrWhiteSpace(_accountNumber))
+            {
+                var (accountResult, accountValue) = IbanNumber.TryCreate(_accountNumber);
+                if (accountResult.IsValid && accountValue!.CountryCode.HasValue)
+                {
+                    _country = accountValue.CountryCode.Value;
+                }
+            }
+            
+            // If still no country, it's an error
+            if (!_country.HasValue)
+            {
+                errors.Add(new ValidationError(
+                    "Country is required",
+                    nameof(BankingDetails.Country),
+                    "Required"));
+                
+                var errorResult = ValidationResult.Success();
+                foreach (var error in errors)
+                {
+                    errorResult.AddError(error.Message, error.MemberName, error.Code);
+                }
+                return (errorResult, null);
+            }
+        }
+
+        // Validate account number is provided
         if (string.IsNullOrWhiteSpace(_accountNumber))
         {
             errors.Add(new ValidationError(
                 "Account number is required",
                 nameof(BankingDetails.AccountNumber),
                 "Required"));
-        }
-        else
-        {
-            var (accountResult, accountValue) = IbanNumber.TryCreate(_accountNumber, _country);
-            if (!accountResult.IsValid)
-            {
-                errors.AddRange(accountResult.Errors);
-            }
-            else
-            {
-                accountNumber = accountValue;
-                
-                // If country wasn't set but IBAN was provided, use the country from IBAN
-                if (!_country.HasValue && accountValue!.CountryCode.HasValue)
-                {
-                    _country = accountValue.CountryCode.Value;
-                }
-            }
-        }
-
-        // Validate country is provided (after potentially auto-detecting from IBAN)
-        if (!_country.HasValue)
-        {
-            errors.Add(new ValidationError(
-                "Country is required",
-                nameof(BankingDetails.Country),
-                "Required"));
-        }
-
-        // Validate and create SWIFT code (optional)
-        SwiftCode? swiftCode = null;
-        if (!string.IsNullOrWhiteSpace(_swiftCode))
-        {
-            var (swiftResult, swiftValue) = SwiftCode.TryCreate(_swiftCode);
-            if (!swiftResult.IsValid)
-            {
-                errors.AddRange(swiftResult.Errors);
-            }
-            else
-            {
-                swiftCode = swiftValue;
-            }
-        }
-
-        // Validate and create routing number (required for USA)
-        RoutingNumber? routingNumber = null;
-        if (!string.IsNullOrWhiteSpace(_routingNumber))
-        {
-            var (routingResult, routingValue) = RoutingNumber.TryCreate(_routingNumber);
-            if (!routingResult.IsValid)
-            {
-                errors.AddRange(routingResult.Errors);
-            }
-            else
-            {
-                routingNumber = routingValue;
-            }
-        }
-
-        // Validate and create sort code (required for UK/Ireland)
-        SortCode? sortCode = null;
-        if (!string.IsNullOrWhiteSpace(_sortCode) && _country.HasValue)
-        {
-            var (sortResult, sortValue) = SortCode.TryCreate(_country.Value, _sortCode);
-            if (!sortResult.IsValid)
-            {
-                errors.AddRange(sortResult.Errors);
-            }
-            else
-            {
-                sortCode = sortValue;
-            }
-        }
-
-        // If we have validation errors so far, return them
-        if (errors.Any())
-        {
+            
             var errorResult = ValidationResult.Success();
             foreach (var error in errors)
             {
@@ -236,13 +189,13 @@ public class BankingDetailsBuilder
             return (errorResult, null);
         }
 
-        // Create BankingDetails - this will perform country-specific validation
+        // Create BankingDetails - this will perform all validation including country-specific validation
         return BankingDetails.TryCreate(
             _country!.Value,
-            accountNumber!,
-            swiftCode,
-            routingNumber,
-            sortCode);
+            _accountNumber!,
+            _swiftCode,
+            _routingNumber,
+            _sortCode);
     }
 
     /// <summary>

@@ -49,33 +49,62 @@ public sealed record BankingDetails
     /// Attempts to create BankingDetails with validation.
     /// </summary>
     /// <param name="country">The country for these banking details.</param>
-    /// <param name="accountNumber">The bank account number (required).</param>
-    /// <param name="swiftCode">The SWIFT/BIC code (optional for most countries, recommended for international).</param>
-    /// <param name="routingNumber">The ABA routing number (required for USA).</param>
-    /// <param name="sortCode">The sort code (required for UK/Ireland).</param>
+    /// <param name="accountNumber">The bank account number as a string (required).</param>
+    /// <param name="swiftCode">The SWIFT/BIC code as a string (optional for most countries, recommended for international).</param>
+    /// <param name="routingNumber">The ABA routing number as a string (required for USA).</param>
+    /// <param name="sortCode">The sort code as a string (required for UK/Ireland).</param>
     /// <returns>A tuple containing the validation result and BankingDetails if valid.</returns>
     public static (ValidationResult Result, BankingDetails? Value) TryCreate(
         CountryCode country,
-        IbanNumber accountNumber,
-        SwiftCode? swiftCode = null,
-        RoutingNumber? routingNumber = null,
-        SortCode? sortCode = null)
+        string accountNumber,
+        string? swiftCode = null,
+        string? routingNumber = null,
+        string? sortCode = null)
     {
-        if (accountNumber == null)
+        var result = ValidationResult.Success();
+
+        // Validate and create account number
+        if (string.IsNullOrWhiteSpace(accountNumber))
         {
-            return (ValidationResult.Failure(
-                "Account number is required",
-                nameof(AccountNumber),
-                "Required"), null);
+            result.AddError("Account number is required", nameof(AccountNumber), "Required");
+            return (result, null);
         }
 
-        var result = ValidationResult.Success();
+        var (accountResult, accountNumberObj) = IbanNumber.TryCreate(accountNumber, country, nameof(AccountNumber));
+        result.Merge(accountResult);
+
+        // Validate and create SWIFT code if provided
+        SwiftCode? swiftCodeObj = null;
+        if (!string.IsNullOrWhiteSpace(swiftCode))
+        {
+            var (swiftResult, swiftObj) = SwiftCode.TryCreate(swiftCode, propertyName: nameof(SwiftCode));
+            result.Merge(swiftResult);
+            swiftCodeObj = swiftObj;
+        }
+
+        // Validate and create routing number if provided
+        RoutingNumber? routingNumberObj = null;
+        if (!string.IsNullOrWhiteSpace(routingNumber))
+        {
+            var (routingResult, routingObj) = RoutingNumber.TryCreate(routingNumber, nameof(RoutingNumber));
+            result.Merge(routingResult);
+            routingNumberObj = routingObj;
+        }
+
+        // Validate and create sort code if provided
+        SortCode? sortCodeObj = null;
+        if (!string.IsNullOrWhiteSpace(sortCode))
+        {
+            var (sortResult, sortObj) = SortCode.TryCreate(country, sortCode, nameof(SortCode));
+            result.Merge(sortResult);
+            sortCodeObj = sortObj;
+        }
 
         // Validate country-specific requirements
         var validationResult = ValidateCountrySpecificRequirements(
             country,
-            routingNumber,
-            sortCode);
+            routingNumberObj,
+            sortCodeObj);
 
         result.Merge(validationResult);
 
@@ -87,10 +116,10 @@ public sealed record BankingDetails
         var bankingDetails = new BankingDetails
         {
             Country = country,
-            AccountNumber = accountNumber,
-            SwiftCode = swiftCode,
-            RoutingNumber = routingNumber,
-            SortCode = sortCode
+            AccountNumber = accountNumberObj!,
+            SwiftCode = swiftCodeObj,
+            RoutingNumber = routingNumberObj,
+            SortCode = sortCodeObj
         };
 
         return (result, bankingDetails);

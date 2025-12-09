@@ -1,7 +1,6 @@
 using Shouldly;
 using Validated.Primitives.Domain.Builders;
 using Validated.Primitives.ValueObjects;
-using Xunit;
 
 namespace Validated.Primitives.Domain.Tests.Builders;
 
