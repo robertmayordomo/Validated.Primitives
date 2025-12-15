@@ -9,8 +9,6 @@ A .NET library that provides strongly-typed, self-validating primitive value obj
 
 This repository contains two NuGet packages: `Validated.Primitives` (core primitives) and `Validated.Primitives.Domain` (composed domain models).
 
-For focused, runnable examples the repository provides separate markdown files in the `doc/` folder. See the links below for concrete usage and sample code you can copy into your projects.
-
 ### 📦 Validated.Primitives (Core)
 The foundation library providing low-level validated primitive value objects.
 
