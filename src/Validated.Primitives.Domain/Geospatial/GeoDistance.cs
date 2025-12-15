@@ -1,4 +1,5 @@
 using Validated.Primitives.Validation;
+using System.Text.Json.Serialization;
 
 namespace Validated.Primitives.Domain.Geospatial;
 
@@ -6,6 +7,7 @@ namespace Validated.Primitives.Domain.Geospatial;
 /// Represents the calculated distance between two geographic coordinates.
 /// Uses the Haversine formula for accurate distance calculations on a sphere.
 /// </summary>
+[JsonConverter(typeof(Serialization.GeoDistanceConverter))]
 public sealed record GeoDistance
 {
     /// <summary>
