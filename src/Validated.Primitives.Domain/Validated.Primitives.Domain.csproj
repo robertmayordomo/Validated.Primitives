@@ -10,10 +10,10 @@
     <Company>Major Domo Softare</Company>
     <Product>Validated Primitives Domain</Product>
     <Description>Domain models and complex types built from Validated.Primitives value objects. Provides strongly-typed, self-validating domain entities for common use cases like Address, ContactInformation, PersonName, and CreditCardDetails.</Description>
-    <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
+    <Copyright>Copyright Â© $(Company) $([System.DateTime]::Now.Year)</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/rbmayordomo/validated-primitives</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/rbmayordomo/validated-primitives</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/robertmayordomo/Validated.Primitives</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/robertmayordomo/Validated.Primitives</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>validation;value-objects;ddd;domain-driven-design;domain-models;aggregates;composites;address;contact-information;credit-card;payment;strongly-typed;self-validating;type-safety;immutable;csharp;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
