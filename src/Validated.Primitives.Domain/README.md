@@ -26,6 +26,7 @@ dotnet add package Validated.Primitives
 - Date/time value objects (DateOfBirth, FutureDate, date ranges)
 - Financial primitives (Money, Percentage, CurrencyCode)
 - Credit card primitives (CreditCardNumber, CreditCardSecurityNumber, CreditCardExpiration)
+- Barcode primitives (UPC-A, EAN-13, EAN-8, Code39, Code128 with automatic format detection and checksum validation)
 - Text primitives (HumanName, AddressLine, City, StateProvince)
 - Validation framework and error handling
 - JSON serialization support
