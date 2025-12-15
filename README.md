@@ -879,7 +879,7 @@ public class ShipmentsController : ControllerBase
         return format switch
         {
             TrackingNumberFormat.UPS => "UPS",
-            TrackingNumberFormat.FedExExpress => "FedEx Express",
+            TrackingNumberFormat.FedExExpress => "FedEx",
             TrackingNumberFormat.FedExGround => "FedEx Ground",
             TrackingNumberFormat.FedExSmartPost => "FedEx SmartPost",
             TrackingNumberFormat.USPS => "USPS",
@@ -1782,6 +1782,7 @@ public class LocationsController : ControllerBase
 ```
 
 ## GeoDistance (Geospatial)
+
 Distance calculation between two geographic coordinates:
 - Haversine formula for accurate great-circle distance
 - Automatic conversion to multiple units (kilometers, miles, meters, nautical miles)
@@ -1800,3 +1801,11 @@ Polygon boundary defined by multiple coordinates:
 - Distance to nearest edge calculation
 
 ### Builder Pattern
+
+## Geospatial examples
+For concrete usage examples and sample code see the following files in this repository:
+
+- `geodistance_examples.md` - examples and usage for `GeoDistance` and distance-related helpers
+- `geoboundary_examples.md` - examples and usage for `GeoBoundary` and polygon/boundary helpers
+
+These markdown files contain runnable snippets and expected outputs to help you get started with geospatial features

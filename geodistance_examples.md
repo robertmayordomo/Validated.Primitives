@@ -475,3 +475,461 @@ var (result4, zeroDistance) = GeoDistance.TryCreate(from!, sameCoord!);
 result4.IsValid.ShouldBeTrue();
 zeroDistance!.Kilometers.ShouldBe(0, tolerance: 0.001);
 ```
+
+---
+
+## GeospatialRoute Domain Object Usage Examples
+
+The **`GeospatialRoute`** domain object represents a complete route composed of multiple contiguous segments, where each segment connects to the next forming a continuous path.
+
+### Basic Route Creation
+
+```csharp
+using Validated.Primitives.Domain.Geospatial;
+
+// Create coordinates for a simple route
+var (_, point1) = Coordinate.TryCreate(40.7128m, -74.0060m); // Lower Manhattan
+var (_, point2) = Coordinate.TryCreate(40.7484m, -73.9857m); // Empire State Building
+var (_, point3) = Coordinate.TryCreate(40.7580m, -73.9855m); // Times Square
+
+// Create segments
+var (_, segment1) = RouteSegment.TryCreate(point1, point2, "To Empire State");
+var (_, segment2) = RouteSegment.TryCreate(point2, point3, "To Times Square");
+
+// Create route
+var (result, route) = GeospatialRoute.TryCreate(
+    new[] { segment1!, segment2! }, 
+    "NYC Walking Tour");
+
+if (result.IsValid)
+{
+    Console.WriteLine(route!.GetDescription());
+    // Output: NYC Walking Tour: 2 segments, Total distance: 5.23 km (3.25 mi)
+    //         From: 40.712800° N, 74.006000° W
+    //         To: 40.758000° N, 73.985500° W
+}
+```
+
+### Using RouteSegmentBuilder and GeospatialRouteBuilder
+
+```csharp
+using Validated.Primitives.Domain.Geospatial.Builders;
+
+// Create coordinates
+var (_, nyc) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, philly) = Coordinate.TryCreate(39.9526m, -75.1652m);
+var (_, dc) = Coordinate.TryCreate(38.9072m, -77.0369m);
+
+// Build route using fluent builder
+var (result, route) = new GeospatialRouteBuilder()
+    .WithName("East Coast Tour")
+    .AddSegment(nyc, philly, "NYC to Philadelphia")
+    .AddSegment(philly, dc, "Philadelphia to DC")
+    .Build();
+
+if (result.IsValid)
+{
+    Console.WriteLine($"Total Distance: {route!.TotalDistanceKilometers:F2} km");
+    Console.WriteLine($"Total Distance: {route.TotalDistanceMiles:F2} miles");
+    Console.WriteLine($"Segments: {route.Segments.Count}");
+}
+```
+
+### Contiguous Segment Validation
+
+The route validates that all segments are contiguous (each segment's To coordinate must match the next segment's From coordinate):
+
+```csharp
+// Valid contiguous segments
+var (_, point1) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, point2) = Coordinate.TryCreate(40.7484m, -73.9857m);
+var (_, point3) = Coordinate.TryCreate(40.7580m, -73.9855m);
+
+var (_, seg1) = RouteSegment.TryCreate(point1, point2);
+var (_, seg2) = RouteSegment.TryCreate(point2, point3); // Starts where seg1 ends ?
+
+var (result1, route1) = GeospatialRoute.TryCreate(new[] { seg1!, seg2! });
+result1.IsValid.ShouldBeTrue();
+
+// Invalid non-contiguous segments
+var (_, point4) = Coordinate.TryCreate(41.0000m, -74.0000m);
+var (_, seg3) = RouteSegment.TryCreate(point1, point2);
+var (_, seg4) = RouteSegment.TryCreate(point4, point3); // Gap! Doesn't start where seg3 ends ?
+
+var (result2, route2) = GeospatialRoute.TryCreate(new[] { seg3!, seg4! });
+result2.IsValid.ShouldBeFalse(); // Error: NonContiguousSegments
+```
+
+### Accessing Route Information
+
+```csharp
+var (_, point1) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, point2) = Coordinate.TryCreate(40.7484m, -73.9857m);
+var (_, point3) = Coordinate.TryCreate(40.7580m, -73.9855m);
+var (_, point4) = Coordinate.TryCreate(40.7829m, -73.9654m);
+
+var (_, segment1) = RouteSegment.TryCreate(point1, point2, "Leg 1");
+var (_, segment2) = RouteSegment.TryCreate(point2, point3, "Leg 2");
+var (_, segment3) = RouteSegment.TryCreate(point3, point4, "Leg 3");
+
+var (_, route) = GeospatialRoute.TryCreate(new[] { segment1!, segment2!, segment3! });
+
+// Total distance
+Console.WriteLine($"Total: {route!.TotalDistanceKilometers:F2} km");
+Console.WriteLine($"Total: {route.TotalDistanceMiles:F2} miles");
+Console.WriteLine($"Total: {route.TotalDistanceMeters:F0} meters");
+
+// Start and end points
+Console.WriteLine($"Start: {route.StartingPoint!.ToCardinalString()}");
+Console.WriteLine($"End: {route.EndingPoint!.ToCardinalString()}");
+
+// All waypoints
+var waypoints = route.GetWaypoints();
+Console.WriteLine($"Waypoints: {waypoints.Count}"); // 4 points
+
+// Segment distances
+for (int i = 0; i < route.Segments.Count; i++)
+{
+    var segment = route.Segments[i];
+    Console.WriteLine($"{segment.Name}: {segment.Distance.ToFormattedString()}");
+}
+
+// Cumulative distance
+for (int i = 0; i < route.Segments.Count; i++)
+{
+    var cumulative = route.GetCumulativeDistance(i);
+    Console.WriteLine($"After segment {i + 1}: {cumulative:F2} km");
+}
+```
+
+### Multi-City Road Trip Example
+
+```csharp
+public class RoadTripPlanner
+{
+    public (ValidationResult Result, GeospatialRoute? Route) PlanTrip(
+        List<(string City, decimal Lat, decimal Lon)> stops,
+        string tripName)
+    {
+        var builder = new GeospatialRouteBuilder().WithName(tripName);
+
+        for (int i = 0; i < stops.Count - 1; i++)
+        {
+            var from = stops[i];
+            var to = stops[i + 1];
+
+            var (_, fromCoord) = Coordinate.TryCreate(from.Lat, from.Lon);
+            var (_, toCoord) = Coordinate.TryCreate(to.Lat, to.Lon);
+
+            builder.AddSegment(fromCoord, toCoord, $"{from.City} to {to.City}");
+        }
+
+        return builder.Build();
+    }
+}
+
+// Usage
+var planner = new RoadTripPlanner();
+
+var eastCoastTrip = new List<(string, decimal, decimal)>
+{
+    ("New York", 40.7128m, -74.0060m),
+    ("Philadelphia", 39.9526m, -75.1652m),
+    ("Washington DC", 38.9072m, -77.0369m),
+    ("Atlanta", 33.7490m, -84.3880m),
+    ("Miami", 25.7617m, -80.1918m)
+};
+
+var (result, route) = planner.PlanTrip(eastCoastTrip, "East Coast Road Trip");
+
+if (result.IsValid)
+{
+    Console.WriteLine(route!.GetDescription());
+    Console.WriteLine();
+    
+    foreach (var segment in route.Segments)
+    {
+        Console.WriteLine($"  {segment.GetDescription()}");
+    }
+    
+    Console.WriteLine();
+    Console.WriteLine($"Total trip: {route.TotalDistanceMiles:F0} miles");
+}
+```
+
+### Delivery Route Optimization Example
+
+```csharp
+public class DeliveryRoute
+{
+    public string DriverName { get; set; } = string.Empty;
+    public GeospatialRoute Route { get; set; } = null!;
+    public DateTime ScheduledStart { get; set; }
+    public List<string> DeliveryAddresses { get; set; } = new();
+
+    public double EstimatedDurationMinutes(double averageSpeedKmh = 50.0)
+    {
+        return (Route.TotalDistanceKilometers / averageSpeedKmh) * 60;
+    }
+
+    public DateTime EstimatedCompletionTime(double averageSpeedKmh = 50.0)
+    {
+        return ScheduledStart.AddMinutes(EstimatedDurationMinutes(averageSpeedKmh));
+    }
+
+    public string GetSummary()
+    {
+        var summary = $"Driver: {DriverName}\n";
+        summary += $"Stops: {DeliveryAddresses.Count}\n";
+        summary += $"Total Distance: {Route.TotalDistanceKilometers:F2} km ({Route.TotalDistanceMiles:F2} mi)\n";
+        summary += $"Estimated Duration: {EstimatedDurationMinutes():F0} minutes\n";
+        summary += $"Scheduled Start: {ScheduledStart:HH:mm}\n";
+        summary += $"Estimated Completion: {EstimatedCompletionTime():HH:mm}\n";
+        return summary;
+    }
+}
+
+// Usage
+var (_, warehouse) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, stop1) = Coordinate.TryCreate(40.7484m, -73.9857m);
+var (_, stop2) = Coordinate.TryCreate(40.7580m, -73.9855m);
+var (_, stop3) = Coordinate.TryCreate(40.7829m, -73.9654m);
+
+var (_, deliveryRoute) = new GeospatialRouteBuilder()
+    .WithName("Morning Deliveries")
+    .AddSegment(warehouse, stop1, "Warehouse to Stop 1")
+    .AddSegment(stop1, stop2, "Stop 1 to Stop 2")
+    .AddSegment(stop2, stop3, "Stop 2 to Stop 3")
+    .AddSegment(stop3, warehouse, "Stop 3 back to Warehouse")
+    .Build();
+
+var delivery = new DeliveryRoute
+{
+    DriverName = "John Smith",
+    Route = deliveryRoute!,
+    ScheduledStart = DateTime.Today.AddHours(8),
+    DeliveryAddresses = new List<string> { "123 Main St", "456 Oak Ave", "789 Elm St" }
+};
+
+Console.WriteLine(delivery.GetSummary());
+```
+
+### GPS Tracking and Route Progress
+
+```csharp
+public class RouteProgress
+{
+    private readonly GeospatialRoute _route;
+    private int _currentSegmentIndex;
+
+    public RouteProgress(GeospatialRoute route)
+    {
+        _route = route;
+        _currentSegmentIndex = 0;
+    }
+
+    public RouteSegment? CurrentSegment => 
+        _currentSegmentIndex < _route.Segments.Count 
+            ? _route.Segments[_currentSegmentIndex] 
+            : null;
+
+    public double CompletedDistanceKm => 
+        _currentSegmentIndex > 0 
+            ? _route.GetCumulativeDistance(_currentSegmentIndex - 1) ?? 0 
+            : 0;
+
+    public double RemainingDistanceKm => 
+        _route.TotalDistanceKilometers - CompletedDistanceKm;
+
+    public double ProgressPercentage => 
+        (_route.TotalDistanceKilometers > 0)
+            ? (CompletedDistanceKm / _route.TotalDistanceKilometers) * 100
+            : 0;
+
+    public bool MoveToNextSegment()
+    {
+        if (_currentSegmentIndex < _route.Segments.Count - 1)
+        {
+            _currentSegmentIndex++;
+            return true;
+        }
+        return false;
+    }
+
+    public bool IsComplete => _currentSegmentIndex >= _route.Segments.Count;
+
+    public string GetProgressReport()
+    {
+        return $"Progress: {ProgressPercentage:F1}%\n" +
+               $"Completed: {CompletedDistanceKm:F2} km\n" +
+               $"Remaining: {RemainingDistanceKm:F2} km\n" +
+               $"Current Segment: {CurrentSegment?.Name ?? "Complete"}";
+    }
+}
+
+// Usage - Track delivery progress
+var (_, route) = new GeospatialRouteBuilder()
+    .WithName("Delivery Route")
+    .AddSegment(warehouse, stop1, "To Customer A")
+    .AddSegment(stop1, stop2, "To Customer B")
+    .AddSegment(stop2, stop3, "To Customer C")
+    .Build();
+
+var progress = new RouteProgress(route!);
+
+Console.WriteLine(progress.GetProgressReport());
+// Progress: 0.0%
+// Completed: 0.00 km
+// Remaining: 15.32 km
+// Current Segment: To Customer A
+
+progress.MoveToNextSegment();
+Console.WriteLine(progress.GetProgressReport());
+// Progress: 29.2%
+// Completed: 4.47 km
+// Remaining: 10.85 km
+// Current Segment: To Customer B
+```
+
+### API Integration Example
+
+```csharp
+public class RouteRequest
+{
+    public string? RouteName { get; set; }
+    public List<WaypointDto> Waypoints { get; set; } = new();
+}
+
+public class WaypointDto
+{
+    public string? Name { get; set; }
+    public decimal Latitude { get; set; }
+    public decimal Longitude { get; set; }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+public class RoutesController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult CreateRoute([FromBody] RouteRequest request)
+    {
+        if (request.Waypoints.Count < 2)
+        {
+            return BadRequest(new { error = "At least 2 waypoints are required" });
+        }
+
+        var builder = new GeospatialRouteBuilder();
+        
+        if (!string.IsNullOrEmpty(request.RouteName))
+        {
+            builder.WithName(request.RouteName);
+        }
+
+        // Build segments from waypoints
+        for (int i = 0; i < request.Waypoints.Count - 1; i++)
+        {
+            var from = request.Waypoints[i];
+            var to = request.Waypoints[i + 1];
+
+            var (fromResult, fromCoord) = Coordinate.TryCreate(from.Latitude, from.Longitude);
+            var (toResult, toCoord) = Coordinate.TryCreate(to.Latitude, to.Longitude);
+
+            if (!fromResult.IsValid)
+                return BadRequest(new { errors = fromResult.Errors });
+            if (!toResult.IsValid)
+                return BadRequest(new { errors = toResult.Errors });
+
+            var segmentName = !string.IsNullOrEmpty(from.Name) && !string.IsNullOrEmpty(to.Name)
+                ? $"{from.Name} to {to.Name}"
+                : null;
+
+            builder.AddSegment(fromCoord, toCoord, segmentName);
+        }
+
+        var (result, route) = builder.Build();
+
+        if (!result.IsValid)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return Ok(new
+        {
+            routeName = route!.Name,
+            segmentCount = route.Segments.Count,
+            totalDistance = new
+            {
+                kilometers = Math.Round(route.TotalDistanceKilometers, 2),
+                miles = Math.Round(route.TotalDistanceMiles, 2),
+                meters = Math.Round(route.TotalDistanceMeters, 0)
+            },
+            startingPoint = route.StartingPoint!.ToCardinalString(),
+            endingPoint = route.EndingPoint!.ToCardinalString(),
+            segments = route.Segments.Select((s, i) => new
+            {
+                index = i,
+                name = s.Name,
+                from = s.From.ToCardinalString(),
+                to = s.To.ToCardinalString(),
+                distance = new
+                {
+                    kilometers = Math.Round(s.Distance.Kilometers, 2),
+                    miles = Math.Round(s.Distance.Miles, 2)
+                },
+                cumulativeKm = Math.Round(route.GetCumulativeDistance(i) ?? 0, 2)
+            })
+        });
+    }
+}
+```
+
+### JSON Serialization
+
+GeospatialRoute objects are fully JSON-serializable:
+
+```csharp
+using System.Text.Json;
+
+var (_, point1) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, point2) = Coordinate.TryCreate(40.7484m, -73.9857m);
+var (_, segment) = RouteSegment.TryCreate(point1, point2, "Downtown");
+var (_, route) = GeospatialRoute.TryCreate(new[] { segment! }, "City Tour");
+
+// Serialize
+var json = JsonSerializer.Serialize(route, new JsonSerializerOptions { WriteIndented = true });
+
+// Deserialize - distances are automatically recalculated
+var deserialized = JsonSerializer.Deserialize<GeospatialRoute>(json);
+Console.WriteLine($"Route: {deserialized!.Name}");
+Console.WriteLine($"Total: {deserialized.TotalDistanceKilometers:F2} km");
+```
+
+### Validation Scenarios
+
+```csharp
+// Valid single segment route
+var (_, from) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, to) = Coordinate.TryCreate(40.7484m, -73.9857m);
+var (_, segment) = RouteSegment.TryCreate(from, to);
+var (result1, route1) = GeospatialRoute.TryCreate(new[] { segment! });
+result1.IsValid.ShouldBeTrue();
+
+// Invalid - empty segments
+var (result2, route2) = GeospatialRoute.TryCreate(Array.Empty<RouteSegment>());
+result2.IsValid.ShouldBeFalse(); // Error: InsufficientSegments
+
+// Invalid - null segments collection
+var (result3, route3) = GeospatialRoute.TryCreate(null);
+result3.IsValid.ShouldBeFalse(); // Error: Required
+
+// Invalid - non-contiguous segments
+var (_, point1) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, point2) = Coordinate.TryCreate(40.7484m, -73.9857m);
+var (_, point3) = Coordinate.TryCreate(41.0000m, -74.0000m);
+var (_, seg1) = RouteSegment.TryCreate(point1, point2);
+var (_, seg2) = RouteSegment.TryCreate(point2, point3);
+var (_, seg3) = RouteSegment.TryCreate(point1, point3); // Gap!
+var (result4, route4) = GeospatialRoute.TryCreate(new[] { seg1!, seg3! });
+result4.IsValid.ShouldBeFalse(); // Error: NonContiguousSegments
+```
