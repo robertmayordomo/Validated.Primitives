@@ -778,7 +778,7 @@ public class Shipment
 {
     public int Id { get; set; }
     public string OrderId { get; set; } = string.Empty;
-    public TrackingNumber PrimaryTracking { get; set; } = null!;
+    public TrackingNumber PrimaryTracking { get; set; = null!;
     public TrackingNumber? SecondaryTracking { get; set; }
     public TrackingNumber? InternationalTracking { get; set; }
     public DateTime ShippedDate { get; set; }
@@ -1221,7 +1221,7 @@ var (_, newYork) = Latitude.TryCreate(40.7128m, 6);
 var (_, london) = Latitude.TryCreate(51.5074m, 6);
 
 Console.WriteLine(bounds.Contains(newYork!));  // Output: True
-Console.WriteLine(bounds.Contains(london!));   // Output: False
+Console.WriteLine(bounds.Contains(london!));    // Output: False
 ```
 
 ### Precision Guide
@@ -1237,3 +1237,589 @@ Console.WriteLine(bounds.Contains(london!));   // Output: False
 | 6 | ~0.11 m | Standard GPS |
 | 7 | ~1.1 cm | Survey grade |
 | 8 | ~1.1 mm | Tectonic plates |
+
+## Longitude Usage Examples
+
+The **`Longitude`** validated primitive represents geographic longitude coordinates with precise validation and formatting.
+
+### Basic Usage
+
+```csharp
+using Validated.Primitives.ValueObjects.Geospatial;
+
+// Validate a longitude coordinate (New York City)
+var (result, longitude) = Longitude.TryCreate(-74.0060m, decimalPlaces: 6);
+if (result.IsValid)
+{
+    Console.WriteLine($"Longitude: {longitude.Value}");            // Output: -74.0060
+    Console.WriteLine($"Formatted: {longitude.ToString()}");        // Output: -74.006000°
+    Console.WriteLine($"Hemisphere: {longitude.GetHemisphere()}");  // Output: West
+    Console.WriteLine($"Cardinal: {longitude.ToCardinalString()}"); // Output: 74.006000° W
+}
+
+// Validate an eastern hemisphere longitude (Sydney)
+var (sydneyResult, sydneyLon) = Longitude.TryCreate(151.2093m, decimalPlaces: 4);
+if (sydneyResult.IsValid)
+{
+    Console.WriteLine($"Sydney: {sydneyLon.ToCardinalString()}"); // Output: 151.2093° E
+}
+
+// Prime Meridian
+var (meridianResult, meridian) = Longitude.TryCreate(0m);
+if (meridianResult.IsValid)
+{
+    Console.WriteLine($"Prime Meridian: {meridian.ToCardinalString()}"); // Output: 0.000000° E
+}
+```
+
+### Valid Range
+
+Longitude values must be between **-180° (West)** and **+180° (East)**:
+
+```csharp
+// Valid longitudes
+var (valid1, _) = Longitude.TryCreate(180m);   // International Date Line East - Valid
+var (valid2, _) = Longitude.TryCreate(-180m);  // International Date Line West - Valid
+var (valid3, _) = Longitude.TryCreate(0m);     // Prime Meridian - Valid
+
+// Invalid longitudes
+var (invalid1, _) = Longitude.TryCreate(181m);   // Invalid: > 180
+var (invalid2, _) = Longitude.TryCreate(-200m);  // Invalid: < -180
+```
+
+### Location Tracking System Example
+
+```csharp
+public class Location
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public Longitude Longitude { get; set; } = null!;
+    public Latitude Latitude { get; set; } = null!;
+    public DateTime Timestamp { get; set; }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+public class LocationsController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult CreateLocation([FromBody] CreateLocationRequest request)
+    {
+        // Validate longitude
+        var (lonResult, longitude) = Longitude.TryCreate(
+            request.Longitude, 
+            decimalPlaces: 6, 
+            propertyName: nameof(request.Longitude));
+        
+        if (!lonResult.IsValid)
+            return BadRequest(new { errors = lonResult.Errors });
+
+        // Validate latitude
+        var (latResult, latitude) = Latitude.TryCreate(
+            request.Latitude, 
+            decimalPlaces: 6, 
+            propertyName: nameof(request.Latitude));
+        
+        if (!latResult.IsValid)
+            return BadRequest(new { errors = latResult.Errors });
+
+        var location = new Location
+        {
+            Name = request.Name,
+            Longitude = longitude!,
+            Latitude = latitude!,
+            Timestamp = DateTime.UtcNow
+        };
+
+        // Save location...
+        return Ok(new
+        {
+            id = 1,
+            name = location.Name,
+            coordinates = new
+            {
+                latitude = location.Latitude.Value,
+                latitudeFormatted = location.Latitude.ToCardinalString(),
+                hemisphere = location.Latitude.GetHemisphere(),
+                longitude = location.Longitude.Value,
+                longitudeFormatted = location.Longitude.ToCardinalString(),
+                longitudeHemisphere = location.Longitude.GetHemisphere()
+            }
+        });
+    }
+
+    [HttpGet("{id}")]
+    public IActionResult GetLocation(int id)
+    {
+        // Retrieve location...
+        var location = new Location
+        {
+            Id = id,
+            Name = "New York City",
+            Latitude = Latitude.TryCreate(40.7128m, 6).Value!,
+            Longitude = Longitude.TryCreate(-74.0060m, 6).Value!,
+            Timestamp = DateTime.UtcNow
+        };
+
+        return Ok(new
+        {
+            id = location.Id,
+            name = location.Name,
+            latitude = location.Latitude.Value,
+            latitudeCardinal = location.Latitude.ToCardinalString(),
+            latitudeHemisphere = location.Latitude.GetHemisphere(),
+            longitude = location.Longitude.Value,
+            longitudeCardinal = location.Longitude.ToCardinalString(),
+            longitudeHemisphere = location.Longitude.GetHemisphere(),
+            timestamp = location.Timestamp
+        });
+    }
+}
+```
+
+### Validation Error Handling
+
+```csharp
+var (result, longitude) = Longitude.TryCreate(200m, propertyName: "UserLongitude");
+
+if (!result.IsValid)
+{
+    // Display all validation errors
+    Console.WriteLine("Validation failed:");
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine($"  {error.MemberName}: {error.Message}");
+        // Output: UserLongitude: Value must be between -180 and 180.
+    }
+    
+    // Or get as bullet list
+    Console.WriteLine(result.ToBulletList());
+    
+    // Or get as dictionary for JSON response
+    var errorDict = result.ToDictionary();
+}
+```
+
+### JSON Serialization
+
+Longitude serializes alongside Latitude for complete coordinate data:
+
+```csharp
+var location = new Location
+{
+    Id = 1,
+    Name = "New York City",
+    Latitude = Latitude.TryCreate(40.7128m, 6).Value!,
+    Longitude = Longitude.TryCreate(-74.0060m, 6).Value!,
+    Timestamp = DateTime.UtcNow
+};
+
+var json = JsonSerializer.Serialize(location);
+// Output: {
+//   "Id":1,
+//   "Name":"New York City",
+//   "Latitude":{"Value":40.7128,"DecimalPlaces":6},
+//   "Longitude":{"Value":-74.0060,"DecimalPlaces":6},
+//   "Timestamp":"2024-01-15T10:30:00Z"
+// }
+
+var deserialized = JsonSerializer.Deserialize<Location>(json);
+Console.WriteLine(deserialized.Longitude.ToCardinalString()); // Output: 74.006000° W
+Console.WriteLine(deserialized.Latitude.ToCardinalString());     // Output: 40.712800° N
+```
+
+### Special Longitude Values
+
+```csharp
+// Prime Meridian (Greenwich, UK)
+var (_, primeMeridian) = Longitude.TryCreate(0m, 2);
+Console.WriteLine(primeMeridian!.ToCardinalString()); // Output: 0.00° E
+
+// International Date Line (East)
+var (_, dateLine) = Longitude.TryCreate(180m, 0);
+Console.WriteLine(dateLine!.ToCardinalString()); // Output: 180° E
+
+// International Date Line (West)
+var (_, dateLineWest) = Longitude.TryCreate(-180m, 0);
+Console.WriteLine(dateLineWest!.ToCardinalString()); // Output: 180° W
+```
+
+## Coordinate Domain Object Usage Examples
+
+The **`Coordinate`** domain object combines Latitude and Longitude for complete GPS positioning with additional metadata.
+
+### Basic Usage
+
+```csharp
+using Validated.Primitives.Domain.Geospatial;
+using Validated.Primitives.Domain.Geospatial.Builders;
+
+// Create a coordinate using TryCreate
+var (result, coordinate) = Coordinate.TryCreate(
+    latitude: 40.7128m,
+    longitude: -74.0060m,
+    decimalPlaces: 6);
+
+if (result.IsValid)
+{
+    Console.WriteLine($"Location: {coordinate.ToString()}");
+    // Output: Location: 40.712800° N, 74.006000° W
+    
+    Console.WriteLine($"Decimal Degrees: {coordinate.ToDecimalDegreesString()}");
+    // Output: Decimal Degrees: 40.7128, -74.0060
+    
+    Console.WriteLine($"Google Maps: {coordinate.ToGoogleMapsFormat()}");
+    // Output: Google Maps: 40.7128,-74.0060
+}
+```
+
+### With Altitude and Accuracy
+
+```csharp
+// Create coordinate with altitude and accuracy
+var (result, coordinate) = Coordinate.TryCreate(
+    latitude: 40.7128m,
+    longitude: -74.0060m,
+    decimalPlaces: 6,
+    altitude: 10.5m,      // 10.5 meters above sea level
+    accuracy: 5.0m);       // ±5 meters accuracy
+
+if (result.IsValid)
+{
+    Console.WriteLine(coordinate.ToString());
+    // Output: 40.712800° N, 74.006000° W, 10.5m (±5m)
+    
+    Console.WriteLine($"Altitude: {coordinate.Altitude}m");
+    Console.WriteLine($"Accuracy: ±{coordinate.Accuracy}m");
+}
+```
+
+### Using the Builder Pattern
+
+```csharp
+var builder = new CoordinateBuilder();
+
+var (result, coordinate) = builder
+    .WithLatitude(40.7128m)
+    .WithLongitude(-74.0060m)
+    .WithAltitude(10.5m)
+    .WithAccuracy(5.0m)
+    .WithDecimalPlaces(6)
+    .Build();
+
+// Or use shorthand methods
+var (result2, coordinate2) = new CoordinateBuilder()
+    .WithCoordinates(40.7128m, -74.0060m)
+    .Build();
+
+// Or set everything at once
+var (result3, coordinate3) = new CoordinateBuilder()
+    .WithPosition(
+        latitude: 40.7128m,
+        longitude: -74.0060m,
+        altitude: 10.5m,
+        accuracy: 5.0m)
+    .Build();
+```
+
+### Distance Calculations
+
+Calculate distance between two coordinates using the Haversine formula:
+
+```csharp
+// Create coordinates for New York and Los Angeles
+var (_, newYork) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, losAngeles) = Coordinate.TryCreate(34.0522m, -118.2437m);
+
+// Calculate distance in kilometers
+var distanceKm = newYork!.DistanceTo(losAngeles!);
+Console.WriteLine($"Distance: {distanceKm:F2} km");
+// Output: Distance: 3944.42 km
+
+// Convert to miles
+var distanceMiles = distanceKm * 0.621371;
+Console.WriteLine($"Distance: {distanceMiles:F2} miles");
+// Output: Distance: 2451.03 miles
+```
+
+### Location Tracking System Example
+
+```csharp
+public class Location
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public Coordinate Position { get; set; } = null!;
+    public DateTime Timestamp { get; set; }
+    public string? Description { get; set; }
+}
+
+public class LocationService
+{
+    public (ValidationResult Result, Location? Location) CreateLocation(
+        string name,
+        decimal latitude,
+        decimal longitude,
+        decimal? altitude = null,
+        string? description = null)
+    {
+        var result = ValidationResult.Success();
+
+        // Validate coordinate
+        var (coordResult, coordinate) = Coordinate.TryCreate(
+            latitude,
+            longitude,
+            decimalPlaces: 6,
+            altitude: altitude);
+
+        if (!coordResult.IsValid)
+        {
+            return (coordResult, null);
+        }
+
+        var location = new Location
+        {
+            Name = name,
+            Position = coordinate!,
+            Timestamp = DateTime.UtcNow,
+            Description = description
+        };
+
+        return (result, location);
+    }
+
+    public double CalculateDistance(Location from, Location to)
+    {
+        return from.Position.DistanceTo(to.Position);
+    }
+
+    public string GetDirections(Location from, Location to)
+    {
+        var distance = CalculateDistance(from, to);
+        var fromCoords = from.Position.ToGoogleMapsFormat();
+        var toCoords = to.Position.ToGoogleMapsFormat();
+        
+        return $"From {from.Name} to {to.Name}: {distance:F2} km\n" +
+               $"Google Maps: https://www.google.com/maps/dir/{fromCoords}/{toCoords}";
+    }
+}
+
+// Usage
+var service = new LocationService();
+
+var (result1, empireState) = service.CreateLocation(
+    "Empire State Building",
+    40.7484m,
+    -73.9857m,
+    altitude: 443.2m,
+    description: "Iconic NYC skyscraper");
+
+var (result2, timesSquare) = service.CreateLocation(
+    "Times Square",
+    40.7580m,
+    -73.9855m,
+    description: "Commercial intersection in Midtown Manhattan");
+
+if (result1.IsValid && result2.IsValid)
+{
+    Console.WriteLine(empireState!.Position.ToString());
+    // Output: 40.748400° N, 73.985700° W, 443.2m
+    
+    var distance = service.CalculateDistance(empireState, timesSquare!);
+    Console.WriteLine($"Distance: {distance:F2} km");
+    // Output: Distance: 1.06 km
+    
+    Console.WriteLine(service.GetDirections(empireState, timesSquare));
+}
+```
+
+### Geofencing Example
+
+```csharp
+public class Geofence
+{
+    public Coordinate Center { get; set; } = null!;
+    public double RadiusKm { get; set; }
+    
+    public bool Contains(Coordinate point)
+    {
+        var distance = Center.DistanceTo(point);
+        return distance <= RadiusKm;
+    }
+}
+
+// Create a geofence around New York City (5 km radius)
+var (_, nycCenter) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var geofence = new Geofence
+{
+    Center = nycCenter!,
+    RadiusKm = 5.0
+};
+
+// Check if locations are within the geofence
+var (_, empireState) = Coordinate.TryCreate(40.7484m, -73.9857m);
+var (_, centralPark) = Coordinate.TryCreate(40.7829m, -73.9654m);
+var (_, boston) = Coordinate.TryCreate(42.3601m, -71.0589m);
+
+Console.WriteLine($"Empire State Building: {geofence.Contains(empireState!)}"); // True
+Console.WriteLine($"Central Park: {geofence.Contains(centralPark!)}");          // True
+Console.WriteLine($"Boston: {geofence.Contains(boston!)}");                     // False
+```
+
+### API Integration Example
+
+```csharp
+public class CreateLocationRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public decimal Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal? Altitude { get; set; }
+    public decimal? Accuracy { get; set; }
+    public string? Description { get; set; }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+public class LocationsController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult CreateLocation([FromBody] CreateLocationRequest request)
+    {
+        // Validate coordinate using domain object
+        var (result, coordinate) = Coordinate.TryCreate(
+            request.Latitude,
+            request.Longitude,
+            decimalPlaces: 6,
+            altitude: request.Altitude,
+            accuracy: request.Accuracy);
+
+        if (!result.IsValid)
+        {
+            return BadRequest(new
+            {
+                errors = result.Errors.Select(e => new
+                {
+                    field = e.MemberName,
+                    message = e.Message,
+                    code = e.Code
+                })
+            });
+        }
+
+        var location = new Location
+        {
+            Name = request.Name,
+            Position = coordinate!,
+            Description = request.Description,
+            Timestamp = DateTime.UtcNow
+        };
+
+        // Save to database...
+
+        return Ok(new
+        {
+            id = 1,
+            name = location.Name,
+            position = new
+            {
+                latitude = location.Position.Latitude.Value,
+                longitude = location.Position.Longitude.Value,
+                altitude = location.Position.Altitude,
+                accuracy = location.Position.Accuracy,
+                formatted = location.Position.ToCardinalString(),
+                googleMaps = $"https://www.google.com/maps/search/?api=1&query={location.Position.ToGoogleMapsFormat()}"
+            },
+            description = location.Description,
+            timestamp = location.Timestamp
+        });
+    }
+
+    [HttpGet("distance")]
+    public IActionResult CalculateDistance(
+        [FromQuery] decimal lat1,
+        [FromQuery] decimal lon1,
+        [FromQuery] decimal lat2,
+        [FromQuery] decimal lon2)
+    {
+        var (result1, coord1) = Coordinate.TryCreate(lat1, lon1);
+        var (result2, coord2) = Coordinate.TryCreate(lat2, lon2);
+
+        if (!result1.IsValid || !result2.IsValid)
+        {
+            return BadRequest("Invalid coordinates");
+        }
+
+        var distanceKm = coord1!.DistanceTo(coord2!);
+        var distanceMiles = distanceKm * 0.621371;
+
+        return Ok(new
+        {
+            from = coord1.ToCardinalString(),
+            to = coord2.ToCardinalString(),
+            distance = new
+            {
+                kilometers = Math.Round(distanceKm, 2),
+                miles = Math.Round(distanceMiles, 2)
+            }
+        });
+    }
+}
+```
+
+### Validation Scenarios
+
+```csharp
+// Valid altitude range: -500m to 10,000m
+var (result1, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: -400m);  // Valid (Dead Sea level)
+var (result2, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: 8848m);  // Valid (Mt. Everest)
+var (result3, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: -600m);  // Invalid (too low)
+var (result4, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: 15000m); // Invalid (too high)
+
+result1.IsValid.ShouldBeTrue();
+result2.IsValid.ShouldBeTrue();
+result3.IsValid.ShouldBeFalse();
+result4.IsValid.ShouldBeFalse();
+
+// Valid accuracy range: 0m to 1,000,000m
+var (result5, _) = Coordinate.TryCreate(40.7128m, -74.0060m, accuracy: 5m);       // Valid (GPS)
+var (result6, _) = Coordinate.TryCreate(40.7128m, -74.0060m, accuracy: -10m);     // Invalid (negative)
+var (result7, _) = Coordinate.TryCreate(40.7128m, -74.0060m, accuracy: 2000000m); // Invalid (too large)
+
+result5.IsValid.ShouldBeTrue();
+result6.IsValid.ShouldBeFalse();
+result7.IsValid.ShouldBeFalse();
+```
+
+### Famous Locations Examples
+
+```csharp
+// Create coordinates for famous world locations
+var locations = new []
+{
+    ("Statue of Liberty", 40.6892m, -74.0445m, 93m),
+    ("Eiffel Tower", 48.8584m, 2.2945m, 330m),
+    ("Sydney Opera House", -33.8568m, 151.2153m, 0m),
+    ("Great Pyramid of Giza", 29.9792m, 31.1342m, 138.8m),
+    ("Mount Everest", 27.9881m, 86.9250m, 8848.86m)
+};
+
+foreach (var (name, lat, lon, alt) in locations)
+{
+    var (result, coord) = Coordinate.TryCreate(lat, lon, altitude: alt, decimalPlaces: 4);
+    
+    if (result.IsValid)
+    {
+        Console.WriteLine($"{name}:");
+        Console.WriteLine($"  Position: {coord!.ToCardinalString()}");
+        Console.WriteLine($"  Google Maps: https://maps.google.com/?q={coord.ToGoogleMapsFormat()}");
+    }
+}
+
+// Output:
+// Statue of Liberty:
+//   Position: 40.6892° N, 74.0445° W, 93.0m
+//   Google Maps: https://maps.google.com/?q=40.6892,-74.0445
+// ...
+```
