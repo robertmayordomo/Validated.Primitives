@@ -668,11 +668,6 @@ public class AddressesController : ControllerBase
 }
 ```
 
-**Available Builders:**
-- `AddressBuilder` - Required: street, city, country, postalCode | Optional: addressLine2, stateProvince
-- `CreditCardBuilder` - Required: cardNumber, securityCode, expiration | Multiple expiration formats supported
-- `BankingDetailsBuilder` - Required: country, accountNumber | Optional: swiftCode, routingNumber (USA), sortCode (UK/Ireland) | Convenience methods for US, UK, and international banking
-
 ## Tracking Number Usage Examples
 
 The **`TrackingNumber`** validated primitive supports validation of shipping tracking numbers across multiple carriers:
@@ -1297,6 +1292,7 @@ public class Location
     public Longitude Longitude { get; set; } = null!;
     public Latitude Latitude { get; set; } = null!;
     public DateTime Timestamp { get; set; }
+    public string? Description { get; set; }
 }
 
 [ApiController]
@@ -1533,7 +1529,7 @@ var (_, newYork) = Coordinate.TryCreate(40.7128m, -74.0060m);
 var (_, losAngeles) = Coordinate.TryCreate(34.0522m, -118.2437m);
 
 // Calculate distance in kilometers
-var distanceKm = newYork!.DistanceTo(losAngeles!);
+var distanceKm = newYork.DistanceTo(losAngeles);
 Console.WriteLine($"Distance: {distanceKm:F2} km");
 // Output: Distance: 3944.42 km
 
@@ -1586,7 +1582,7 @@ public class LocationService
             Description = description
         };
 
-        return (result, location);
+        return (result, result.IsValid ? location : null);
     }
 
     public double CalculateDistance(Location from, Location to)
@@ -1670,13 +1666,12 @@ Console.WriteLine($"Boston: {geofence.Contains(boston!)}");                     
 ### API Integration Example
 
 ```csharp
-public class CreateLocationRequest
+public class LocationRequest
 {
     public string Name { get; set; } = string.Empty;
     public decimal Latitude { get; set; }
     public decimal Longitude { get; set; }
     public decimal? Altitude { get; set; }
-    public decimal? Accuracy { get; set; }
     public string? Description { get; set; }
 }
 
@@ -1685,15 +1680,14 @@ public class CreateLocationRequest
 public class LocationsController : ControllerBase
 {
     [HttpPost]
-    public IActionResult CreateLocation([FromBody] CreateLocationRequest request)
+    public IActionResult CreateLocation([FromBody] LocationRequest request)
     {
-        // Validate coordinate using domain object
+        // Validate and create coordinates
         var (result, coordinate) = Coordinate.TryCreate(
             request.Latitude,
             request.Longitude,
             decimalPlaces: 6,
-            altitude: request.Altitude,
-            accuracy: request.Accuracy);
+            altitude: request.Altitude);
 
         if (!result.IsValid)
         {
@@ -1727,7 +1721,6 @@ public class LocationsController : ControllerBase
                 latitude = location.Position.Latitude.Value,
                 longitude = location.Position.Longitude.Value,
                 altitude = location.Position.Altitude,
-                accuracy = location.Position.Accuracy,
                 formatted = location.Position.ToCardinalString(),
                 googleMaps = $"https://www.google.com/maps/search/?api=1&query={location.Position.ToGoogleMapsFormat()}"
             },
@@ -1736,90 +1729,363 @@ public class LocationsController : ControllerBase
         });
     }
 
-    [HttpGet("distance")]
-    public IActionResult CalculateDistance(
-        [FromQuery] decimal lat1,
-        [FromQuery] decimal lon1,
-        [FromQuery] decimal lat2,
-        [FromQuery] decimal lon2)
+    [HttpGet("nearby")]
+    public IActionResult FindNearby(
+        [FromQuery] decimal latitude,
+        [FromQuery] decimal longitude,
+        [FromQuery] double radiusKm = 10.0)
     {
-        var (result1, coord1) = Coordinate.TryCreate(lat1, lon1);
-        var (result2, coord2) = Coordinate.TryCreate(lat2, lon2);
+        var (result, center) = Coordinate.TryCreate(latitude, longitude);
 
-        if (!result1.IsValid || !result2.IsValid)
+        if (!result.IsValid)
+            return BadRequest(new { errors = result.Errors });
+
+        // Get locations from database (example)
+        var locations = GetLocationsFromDatabase();
+
+        var nearby = new List<object>();
+        foreach (var location in locations)
         {
-            return BadRequest("Invalid coordinates");
-        }
+            var (distResult, distance) = GeoDistance.TryCreate(center!, location.Position);
 
-        var distanceKm = coord1!.DistanceTo(coord2!);
-        var distanceMiles = distanceKm * 0.621371;
+            if (distResult.IsValid && distance!.IsWithinRadius(radiusKm))
+            {
+                nearby.Add(new
+                {
+                    name = location.Name,
+                    position = location.Position.ToCardinalString(),
+                    distance = new
+                    {
+                        kilometers = Math.Round(distance.Kilometers, 2),
+                        miles = Math.Round(distance.Miles, 2),
+                        formatted = distance.ToFormattedString()
+                    }
+                });
+            }
+        }
 
         return Ok(new
         {
-            from = coord1.ToCardinalString(),
-            to = coord2.ToCardinalString(),
-            distance = new
-            {
-                kilometers = Math.Round(distanceKm, 2),
-                miles = Math.Round(distanceMiles, 2)
-            }
+            center = center.ToCardinalString(),
+            radiusKm,
+            count = nearby.Count,
+            locations = nearby.OrderBy(l => ((dynamic)l).distance.kilometers)
         });
     }
+
+    private List<(string Name, Coordinate Position)> GetLocationsFromDatabase()
+    {
+        // Mock implementation
+        return new List<(string, Coordinate)>();
+    }
 }
 ```
 
-### Validation Scenarios
+## GeoDistance Domain Object Usage Examples
+
+The **`GeoDistance`** domain object calculates the great-circle distance between two geographic coordinates using the Haversine formula.
+
+### Basic Usage
 
 ```csharp
-// Valid altitude range: -500m to 10,000m
-var (result1, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: -400m);  // Valid (Dead Sea level)
-var (result2, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: 8848m);  // Valid (Mt. Everest)
-var (result3, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: -600m);  // Invalid (too low)
-var (result4, _) = Coordinate.TryCreate(40.7128m, -74.0060m, altitude: 15000m); // Invalid (too high)
+using Validated.Primitives.Domain.Geospatial;
 
-result1.IsValid.ShouldBeTrue();
-result2.IsValid.ShouldBeTrue();
-result3.IsValid.ShouldBeFalse();
-result4.IsValid.ShouldBeFalse();
+// Create two coordinates
+var (_, newYork) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, losAngeles) = Coordinate.TryCreate(34.0522m, -118.2437m);
 
-// Valid accuracy range: 0m to 1,000,000m
-var (result5, _) = Coordinate.TryCreate(40.7128m, -74.0060m, accuracy: 5m);       // Valid (GPS)
-var (result6, _) = Coordinate.TryCreate(40.7128m, -74.0060m, accuracy: -10m);     // Invalid (negative)
-var (result7, _) = Coordinate.TryCreate(40.7128m, -74.0060m, accuracy: 2000000m); // Invalid (too large)
+// Calculate distance
+var (result, distance) = GeoDistance.TryCreate(newYork!, losAngeles!);
 
-result5.IsValid.ShouldBeTrue();
-result6.IsValid.ShouldBeFalse();
-result7.IsValid.ShouldBeFalse();
+if (result.IsValid)
+{
+    Console.WriteLine($"Distance: {distance.Kilometers:F2} km");        // 3944.42 km
+    Console.WriteLine($"Distance: {distance.Miles:F2} miles");          // 2451.03 miles
+    Console.WriteLine($"Distance: {distance.Meters:F0} meters");        // 3944422 meters
+    Console.WriteLine($"Distance: {distance.NauticalMiles:F2} nm");     // 2129.83 nm
+}
 ```
 
-### Famous Locations Examples
+### Multiple Distance Units
 
 ```csharp
-// Create coordinates for famous world locations
-var locations = new []
-{
-    ("Statue of Liberty", 40.6892m, -74.0445m, 93m),
-    ("Eiffel Tower", 48.8584m, 2.2945m, 330m),
-    ("Sydney Opera House", -33.8568m, 151.2153m, 0m),
-    ("Great Pyramid of Giza", 29.9792m, 31.1342m, 138.8m),
-    ("Mount Everest", 27.9881m, 86.9250m, 8848.86m)
-};
+var (_, from) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, to) = Coordinate.TryCreate(51.5074m, -0.1278m); // London
 
-foreach (var (name, lat, lon, alt) in locations)
+var (_, distance) = GeoDistance.TryCreate(from!, to!);
+
+// Access different units
+Console.WriteLine(distance!.Kilometers);      // 5570.22 km
+Console.WriteLine(distance.Miles);            // 3461.67 miles
+Console.WriteLine(distance.Meters);           // 5570220.0 meters
+Console.WriteLine(distance.NauticalMiles);    // 3007.57 nautical miles
+```
+
+### Formatted Output
+
+```csharp
+var (_, distance) = GeoDistance.TryCreate(newYork!, losAngeles!);
+
+// Format with different units and precision
+Console.WriteLine(distance!.ToFormattedString(DistanceUnit.Kilometers, 2));  // "3944.42 km"
+Console.WriteLine(distance.ToFormattedString(DistanceUnit.Miles, 1));        // "2451.0 mi"
+Console.WriteLine(distance.ToFormattedString(DistanceUnit.Meters, 0));       // "3944422 m"
+Console.WriteLine(distance.ToFormattedString(DistanceUnit.NauticalMiles, 2)); // "2129.83 nm"
+
+// Default formatting
+Console.WriteLine(distance.ToString()); // "3944.42 km"
+```
+
+### Human-Readable Descriptions
+
+```csharp
+var (_, from) = Coordinate.TryCreate(40.7128m, -74.0060m, decimalPlaces: 4);
+var (_, to) = Coordinate.TryCreate(34.0522m, -118.2437m, decimalPlaces: 4);
+var (_, distance) = GeoDistance.TryCreate(from!, to!);
+
+Console.WriteLine(distance!.GetDescription());
+// Output: Distance from 40.7128° N, 74.0060° W to 34.0522° N, 118.2437° W: 3944.42 km (2451.03 mi)
+```
+
+### Geofencing / Radius Checking
+
+```csharp
+var (_, cityCenter) = Coordinate.TryCreate(40.7128m, -74.0060m);
+var (_, location1) = Coordinate.TryCreate(40.7484m, -73.9857m); // ~1 km away
+var (_, location2) = Coordinate.TryCreate(34.0522m, -118.2437m); // ~3944 km away
+
+var (_, distance1) = GeoDistance.TryCreate(cityCenter!, location1!);
+var (_, distance2) = GeoDistance.TryCreate(cityCenter!, location2!);
+
+// Check if within 5km radius
+Console.WriteLine(distance1!.IsWithinRadius(5.0));  // True
+Console.WriteLine(distance2!.IsWithinRadius(5.0));  // False
+```
+
+### Proximity Service Example
+
+```csharp
+public class ProximityService
 {
-    var (result, coord) = Coordinate.TryCreate(lat, lon, altitude: alt, decimalPlaces: 4);
-    
-    if (result.IsValid)
+    public class NearbyLocation
     {
-        Console.WriteLine($"{name}:");
-        Console.WriteLine($"  Position: {coord!.ToCardinalString()}");
-        Console.WriteLine($"  Google Maps: https://maps.google.com/?q={coord.ToGoogleMapsFormat()}");
+        public string Name { get; set; } = string.Empty;
+        public Coordinate Position { get; set; } = null!;
+        public GeoDistance Distance { get; set; } = null!;
+    }
+
+    public List<NearbyLocation> FindLocationsWithinRadius(
+        Coordinate center,
+        List<(string Name, Coordinate Position)> locations,
+        double radiusKm)
+    {
+        var nearbyLocations = new List<NearbyLocation>();
+
+        foreach (var (name, position) in locations)
+        {
+            var (result, distance) = GeoDistance.TryCreate(center, position);
+            
+            if (result.IsValid && distance!.IsWithinRadius(radiusKm))
+            {
+                nearbyLocations.Add(new NearbyLocation
+                {
+                    Name = name,
+                    Position = position,
+                    Distance = distance
+                });
+            }
+        }
+
+        // Sort by distance
+        return nearbyLocations.OrderBy(l => l.Distance.Kilometers).ToList();
     }
 }
 
+// Usage
+var service = new ProximityService();
+var (_, currentLocation) = Coordinate.TryCreate(40.7128m, -74.0060m);
+
+var locations = new List<(string, Coordinate)>
+{
+    ("Empire State Building", Coordinate.TryCreate(40.7484m, -73.9857m).Value!),
+    ("Times Square", Coordinate.TryCreate(40.7580m, -73.9855m).Value!),
+    ("Central Park", Coordinate.TryCreate(40.7829m, -73.9654m).Value!),
+    ("Los Angeles", Coordinate.TryCreate(34.0522m, -118.2437m).Value!)
+};
+
+var nearby = service.FindLocationsWithinRadius(currentLocation!, locations, 10.0);
+
+foreach (var location in nearby)
+{
+    Console.WriteLine($"{location.Name}: {location.Distance.ToFormattedString(DistanceUnit.Kilometers, 2)}");
+}
 // Output:
-// Statue of Liberty:
-//   Position: 40.6892° N, 74.0445° W, 93.0m
-//   Google Maps: https://maps.google.com/?q=40.6892,-74.0445
-// ...
+// Empire State Building: 4.23 km
+// Times Square: 5.12 km
+// Central Park: 7.89 km
+```
+
+### Distance Matrix Example
+
+```csharp
+public class DistanceMatrix
+{
+    public static Dictionary<(string From, string To), GeoDistance> Calculate(
+        Dictionary<string, Coordinate> locations)
+    {
+        var matrix = new Dictionary<(string, string), GeoDistance>();
+
+        var locationList = locations.ToList();
+        for (int i = 0; i < locationList.Count; i++)
+        {
+            for (int j = i + 1; j < locationList.Count; j++)
+            {
+                var from = locationList[i];
+                var to = locationList[j];
+
+                var (result, distance) = GeoDistance.TryCreate(from.Value, to.Value);
+                if (result.IsValid)
+                {
+                    matrix[(from.Key, to.Key)] = distance!;
+                    matrix[(to.Key, from.Key)] = distance!; // Symmetric
+                }
+            }
+        }
+
+        return matrix;
+    }
+}
+
+// Usage
+var cities = new Dictionary<string, Coordinate>
+{
+    ["New York"] = Coordinate.TryCreate(40.7128m, -74.0060m).Value!,
+    ["Los Angeles"] = Coordinate.TryCreate(34.0522m, -118.2437m).Value!,
+    ["Chicago"] = Coordinate.TryCreate(41.8781m, -87.6298m).Value!,
+    ["London"] = Coordinate.TryCreate(51.5074m, -0.1278m).Value!
+};
+
+var matrix = DistanceMatrix.Calculate(cities);
+
+Console.WriteLine($"New York to Los Angeles: {matrix[("New York", "Los Angeles")].ToFormattedString()}");
+Console.WriteLine($"New York to Chicago: {matrix[("New York", "Chicago")].ToFormattedString()}");
+Console.WriteLine($"New York to London: {matrix[("New York", "London")].ToFormattedString()}");
+```
+
+### API Integration Example
+
+```csharp
+public class LocationRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public decimal Latitude { get; set; }
+    public decimal Longitude { get; set; }
+    public decimal? Altitude { get; set; }
+    public string? Description { get; set; }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+public class LocationsController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult CreateLocation([FromBody] LocationRequest request)
+    {
+        // Validate and create coordinates
+        var (result, coordinate) = Coordinate.TryCreate(
+            request.Latitude,
+            request.Longitude,
+            decimalPlaces: 6,
+            altitude: request.Altitude);
+
+        if (!result.IsValid)
+        {
+            return BadRequest(new
+            {
+                errors = result.Errors.Select(e => new
+                {
+                    field = e.MemberName,
+                    message = e.Message,
+                    code = e.Code
+                })
+            });
+        }
+
+        var location = new Location
+        {
+            Name = request.Name,
+            Position = coordinate!,
+            Description = request.Description,
+            Timestamp = DateTime.UtcNow
+        };
+
+        // Save to database...
+
+        return Ok(new
+        {
+            id = 1,
+            name = location.Name,
+            position = new
+            {
+                latitude = location.Position.Latitude.Value,
+                longitude = location.Position.Longitude.Value,
+                altitude = location.Position.Altitude,
+                formatted = location.Position.ToCardinalString(),
+                googleMaps = $"https://www.google.com/maps/search/?api=1&query={location.Position.ToGoogleMapsFormat()}"
+            },
+            description = location.Description,
+            timestamp = location.Timestamp
+        });
+    }
+
+    [HttpGet("nearby")]
+    public IActionResult FindNearby(
+        [FromQuery] decimal latitude,
+        [FromQuery] decimal longitude,
+        [FromQuery] double radiusKm = 10.0)
+    {
+        var (result, center) = Coordinate.TryCreate(latitude, longitude);
+
+        if (!result.IsValid)
+            return BadRequest(new { errors = result.Errors });
+
+        // Get locations from database (example)
+        var locations = GetLocationsFromDatabase();
+
+        var nearby = new List<object>();
+        foreach (var location in locations)
+        {
+            var (distResult, distance) = GeoDistance.TryCreate(center!, location.Position);
+
+            if (distResult.IsValid && distance!.IsWithinRadius(radiusKm))
+            {
+                nearby.Add(new
+                {
+                    name = location.Name,
+                    position = location.Position.ToCardinalString(),
+                    distance = new
+                    {
+                        kilometers = Math.Round(distance.Kilometers, 2),
+                        miles = Math.Round(distance.Miles, 2),
+                        formatted = distance.ToFormattedString()
+                    }
+                });
+            }
+        }
+
+        return Ok(new
+        {
+            center = center.ToCardinalString(),
+            radiusKm,
+            count = nearby.Count,
+            locations = nearby.OrderBy(l => ((dynamic)l).distance.kilometers)
+        });
+    }
+
+    private List<(string Name, Coordinate Position)> GetLocationsFromDatabase()
+    {
+        // Mock implementation
+        return new List<(string, Coordinate)>();
+    }
+}
 ```
