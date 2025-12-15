@@ -136,6 +136,7 @@ dotnet add package Validated.Primitives
 
 ### 📍 Geographic Coordinates
 - **`Latitude`** - Validated latitude coordinate (-90 to +90 degrees) with configurable decimal places (0-8), hemisphere detection (North/South), and cardinal direction formatting
+- **`Longitude`** - Validated longitude coordinate (-180 to +180 degrees) with configurable decimal places (0-8), hemisphere detection (East/West), and cardinal direction formatting
 
 ### 📅 Date & Time
 - **`DateOfBirth`** - Must be in the past, cannot be future date
