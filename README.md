@@ -161,16 +161,16 @@ dotnet add package Validated.Primitives.Domain
 
 ### 👤 Personal Information
 - **`PersonName`** - Complete person name with first, middle (optional), and last name components, built from validated `HumanName` primitives
-- **`ContactInformation`** - Contact details including email address, phone number, and website URL, composed from validated communication primitives
+- [**`ContactInformation`**](doc/contactinformation_readme.md) - Contact details including email address, phone number, and website URL, composed from validated communication primitives
 
 ### 🏠 Address
-- **`Address`** - Complete postal address with street address lines, city, state/province, postal code, and country code
+- [**`Address`**](doc/address_readme.md) - Complete postal address with street address lines, city, state/province, postal code, and country code
   - **`AddressBuilder`** - Fluent builder for constructing validated addresses step-by-step
 
 ### 💳 Financial
-- **`CreditCardDetails`** - Complete credit card information including card number, security code, and expiration date
+- [**`CreditCardDetails`**](doc/creditcard_readme.md) - Complete credit card information including card number, security code, and expiration date
   - **`CreditCardBuilder`** - Fluent builder for constructing validated credit card details
-- **`BankingDetails`** - Complete banking information including account number, routing number, SWIFT/BIC code, IBAN, and sort code
+- [**`BankingDetails`**](doc/banking_readme.md) - Complete banking information including account number, routing number, SWIFT/BIC code, IBAN, and sort code
   - **`BankingDetailsBuilder`** - Fluent builder for constructing validated banking details
 
 ### 🌍 Geospatial [examples](doc/geospatial_examples.md) 
@@ -182,13 +182,6 @@ dotnet add package Validated.Primitives.Domain
   - **`GeospatialRouteBuilder`** - Fluent builder for constructing multi-segment routes
 - **`RouteSegment`** - Individual route segment with start/end coordinates, distance, and duration
   - **`RouteSegmentBuilder`** - Fluent builder for constructing route segments
-
-## Examples
-
-- Geospatial examples (Latitude, Longitude, Coordinate): [docs/geospatial_examples.md](doc/geospatial_examples.md) 
-- Builder examples (Address, CreditCard, Banking): [docs/builders_examples.md](doc/builders_examples.md) 
-- GeoDistance examples: [docs/geodistance_examples.md](doc/geodistance_examples.md)
-- GeoBoundary examples: [docs/geoboundary_examples.md](doc/geoboundary_examples.md) 
 
 ## Where to find API reference
 
