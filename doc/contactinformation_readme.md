@@ -1,8 +1,8 @@
-# Validated.Primitives.ContactInformation Namespace
+﻿# Validated.Primitives.ContactInformation
 
 The ContactInformation namespace provides validated value objects and domain models for working with contact details including email addresses, phone numbers, and website URLs. All types include built-in validation, format checking, and country-specific phone number support.
 
-## ?? Package Information
+## 📦 Package Information
 
 The contact information types are split across two packages:
 
@@ -16,7 +16,7 @@ The contact information types are split across two packages:
 
 ---
 
-## ?? Core Primitives
+## 📧 Core Primitives
 
 ### EmailAddress
 
@@ -52,47 +52,47 @@ else
 
 ```csharp
 // Simple addresses
-var (r1, e1) = EmailAddress.TryCreate("user@example.com");              // ? Valid
-var (r2, e2) = EmailAddress.TryCreate("john.doe@example.com");          // ? Valid
-var (r3, e3) = EmailAddress.TryCreate("test@subdomain.example.com");    // ? Valid
+var (r1, e1) = EmailAddress.TryCreate("user@example.com");              // ✓ Valid
+var (r2, e2) = EmailAddress.TryCreate("john.doe@example.com");          // ✓ Valid
+var (r3, e3) = EmailAddress.TryCreate("test@subdomain.example.com");    // ✓ Valid
 
 // With special characters
-var (r4, e4) = EmailAddress.TryCreate("user+tag@example.com");          // ? Valid (plus addressing)
-var (r5, e5) = EmailAddress.TryCreate("user_name@example.com");         // ? Valid (underscore)
-var (r6, e6) = EmailAddress.TryCreate("first.last@example.com");        // ? Valid (dot)
+var (r4, e4) = EmailAddress.TryCreate("user+tag@example.com");          // ✓ Valid (plus addressing)
+var (r5, e5) = EmailAddress.TryCreate("user_name@example.com");         // ✓ Valid (underscore)
+var (r6, e6) = EmailAddress.TryCreate("first.last@example.com");        // ✓ Valid (dot)
 
 // International domains
-var (r7, e7) = EmailAddress.TryCreate("user@example.co.uk");            // ? Valid (country TLD)
-var (r8, e8) = EmailAddress.TryCreate("test@example.org");              // ? Valid (.org)
-var (r9, e9) = EmailAddress.TryCreate("admin@example.gov");             // ? Valid (.gov)
+var (r7, e7) = EmailAddress.TryCreate("user@example.co.uk");            // ✓ Valid (country TLD)
+var (r8, e8) = EmailAddress.TryCreate("test@example.org");              // ✓ Valid (.org)
+var (r9, e9) = EmailAddress.TryCreate("admin@example.gov");             // ✓ Valid (.gov)
 
 // Complex but valid
-var (r10, e10) = EmailAddress.TryCreate("name.surname@sub.domain.example.com"); // ? Valid
-var (r11, e11) = EmailAddress.TryCreate("user123@example123.com");      // ? Valid (numbers)
-var (r12, e12) = EmailAddress.TryCreate("a@b.c");                       // ? Valid (minimal)
+var (r10, e10) = EmailAddress.TryCreate("name.surname@sub.domain.example.com"); // ✓ Valid
+var (r11, e11) = EmailAddress.TryCreate("user123@example123.com");      // ✓ Valid (numbers)
+var (r12, e12) = EmailAddress.TryCreate("a@b.c");                       // ✓ Valid (minimal)
 ```
 
 #### Invalid Email Addresses
 
 ```csharp
 // Missing parts
-var (r1, e1) = EmailAddress.TryCreate("@example.com");                  // ? Missing local part
-var (r2, e2) = EmailAddress.TryCreate("user@");                         // ? Missing domain
-var (r3, e3) = EmailAddress.TryCreate("userexample.com");               // ? Missing @
+var (r1, e1) = EmailAddress.TryCreate("@example.com");                  // ✗ Missing local part
+var (r2, e2) = EmailAddress.TryCreate("user@");                         // ✗ Missing domain
+var (r3, e3) = EmailAddress.TryCreate("userexample.com");               // ✗ Missing @
 
 // Invalid format
-var (r4, e4) = EmailAddress.TryCreate("user @example.com");             // ? Space in local part
-var (r5, e5) = EmailAddress.TryCreate("user@example .com");             // ? Space in domain
-var (r6, e6) = EmailAddress.TryCreate("user@@example.com");             // ? Double @
+var (r4, e4) = EmailAddress.TryCreate("user @example.com");             // ✗ Space in local part
+var (r5, e5) = EmailAddress.TryCreate("user@example .com");             // ✗ Space in domain
+var (r6, e6) = EmailAddress.TryCreate("user@@example.com");             // ✗ Double @
 
 // Empty or null
-var (r7, e7) = EmailAddress.TryCreate("");                              // ? Empty
-var (r8, e8) = EmailAddress.TryCreate(null);                            // ? Null
-var (r9, e9) = EmailAddress.TryCreate("   ");                           // ? Whitespace only
+var (r7, e7) = EmailAddress.TryCreate("");                              // ✗ Empty
+var (r8, e8) = EmailAddress.TryCreate(null);                            // ✗ Null
+var (r9, e9) = EmailAddress.TryCreate("   ");                           // ✗ Whitespace only
 
 // Too long
 var longEmail = new string('a', 250) + "@example.com";
-var (r10, e10) = EmailAddress.TryCreate(longEmail);                     // ? Exceeds 256 characters
+var (r10, e10) = EmailAddress.TryCreate(longEmail);                     // ✗ Exceeds 256 characters
 ```
 
 #### Email Format Examples
@@ -159,50 +159,50 @@ if (result.IsValid)
 
 ```csharp
 // United States
-var (r1, p1) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "+1-555-123-4567");  // ? International format
-var (r2, p2) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "(555) 123-4567");   // ? Parentheses format
-var (r3, p3) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "555-123-4567");     // ? Domestic format
+var (r1, p1) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "+1-555-123-4567");  // ✓ International format
+var (r2, p2) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "(555) 123-4567");   // ✓ Parentheses format
+var (r3, p3) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "555-123-4567");     // ✓ Domestic format
 
 // United Kingdom
-var (r4, p4) = PhoneNumber.TryCreate(CountryCode.UnitedKingdom, "+44 20 7123 4567"); // ? London landline
-var (r5, p5) = PhoneNumber.TryCreate(CountryCode.UnitedKingdom, "+44 7700 900123"); // ? Mobile
+var (r4, p4) = PhoneNumber.TryCreate(CountryCode.UnitedKingdom, "+44 20 7123 4567"); // ✓ London landline
+var (r5, p5) = PhoneNumber.TryCreate(CountryCode.UnitedKingdom, "+44 7700 900123"); // ✓ Mobile
 
 // Germany
-var (r6, p6) = PhoneNumber.TryCreate(CountryCode.Germany, "+49 30 12345678");       // ? Berlin
-var (r7, p7) = PhoneNumber.TryCreate(CountryCode.Germany, "+49 89 12345678");       // ? Munich
+var (r6, p6) = PhoneNumber.TryCreate(CountryCode.Germany, "+49 30 12345678");       // ✓ Berlin
+var (r7, p7) = PhoneNumber.TryCreate(CountryCode.Germany, "+49 89 12345678");       // ✓ Munich
 
 // France
-var (r8, p8) = PhoneNumber.TryCreate(CountryCode.France, "+33 1 42 34 56 78");      // ? Paris
-var (r9, p9) = PhoneNumber.TryCreate(CountryCode.France, "+33 6 12 34 56 78");      // ? Mobile
+var (r8, p8) = PhoneNumber.TryCreate(CountryCode.France, "+33 1 42 34 56 78");      // ✓ Paris
+var (r9, p9) = PhoneNumber.TryCreate(CountryCode.France, "+33 6 12 34 56 78");      // ✓ Mobile
 
 // Japan
-var (r10, p10) = PhoneNumber.TryCreate(CountryCode.Japan, "+81 3 1234 5678");       // ? Tokyo
-var (r11, p11) = PhoneNumber.TryCreate(CountryCode.Japan, "+81 90 1234 5678");      // ? Mobile
+var (r10, p10) = PhoneNumber.TryCreate(CountryCode.Japan, "+81 3 1234 5678");       // ✓ Tokyo
+var (r11, p11) = PhoneNumber.TryCreate(CountryCode.Japan, "+81 90 1234 5678");      // ✓ Mobile
 
 // Australia
-var (r12, p12) = PhoneNumber.TryCreate(CountryCode.Australia, "+61 2 1234 5678");   // ? Sydney
-var (r13, p13) = PhoneNumber.TryCreate(CountryCode.Australia, "+61 4 1234 5678");   // ? Mobile
+var (r12, p12) = PhoneNumber.TryCreate(CountryCode.Australia, "+61 2 1234 5678");   // ✓ Sydney
+var (r13, p13) = PhoneNumber.TryCreate(CountryCode.Australia, "+61 4 1234 5678");   // ✓ Mobile
 
 // Canada (same format as US)
-var (r14, p14) = PhoneNumber.TryCreate(CountryCode.Canada, "+1-416-555-1234");      // ? Toronto
+var (r14, p14) = PhoneNumber.TryCreate(CountryCode.Canada, "+1-416-555-1234");      // ✓ Toronto
 ```
 
 #### Invalid Phone Numbers
 
 ```csharp
 // Too short
-var (r1, p1) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "123");      // ? Too short
+var (r1, p1) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "123");      // ✗ Too short
 
 // Too long
 var longPhone = new string('1', 25);
-var (r2, p2) = PhoneNumber.TryCreate(CountryCode.UnitedStates, longPhone);  // ? Too long
+var (r2, p2) = PhoneNumber.TryCreate(CountryCode.UnitedStates, longPhone);  // ✗ Too long
 
 // Invalid format
-var (r3, p3) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "abc-def-ghij"); // ? Letters
+var (r3, p3) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "abc-def-ghij"); // ✗ Letters
 
 // Empty or null
-var (r4, p4) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "");         // ? Empty
-var (r5, p5) = PhoneNumber.TryCreate(CountryCode.UnitedStates, null);       // ? Null
+var (r4, p4) = PhoneNumber.TryCreate(CountryCode.UnitedStates, "");         // ✗ Empty
+var (r5, p5) = PhoneNumber.TryCreate(CountryCode.UnitedStates, null);       // ✗ Null
 ```
 
 #### Phone Number Formats
@@ -267,54 +267,54 @@ if (result.IsValid)
 
 ```csharp
 // Simple URLs
-var (r1, u1) = WebsiteUrl.TryCreate("https://example.com");             // ? HTTPS
-var (r2, u2) = WebsiteUrl.TryCreate("http://example.com");              // ? HTTP
-var (r3, u3) = WebsiteUrl.TryCreate("https://www.example.com");         // ? With www
+var (r1, u1) = WebsiteUrl.TryCreate("https://example.com");             // ✓ HTTPS
+var (r2, u2) = WebsiteUrl.TryCreate("http://example.com");              // ✓ HTTP
+var (r3, u3) = WebsiteUrl.TryCreate("https://www.example.com");         // ✓ With www
 
 // With paths
-var (r4, u4) = WebsiteUrl.TryCreate("https://example.com/page");        // ? With path
-var (r5, u5) = WebsiteUrl.TryCreate("https://example.com/path/to/page"); // ? Multi-level path
+var (r4, u4) = WebsiteUrl.TryCreate("https://example.com/page");        // ✓ With path
+var (r5, u5) = WebsiteUrl.TryCreate("https://example.com/path/to/page"); // ✓ Multi-level path
 
 // With query strings
-var (r6, u6) = WebsiteUrl.TryCreate("https://example.com?id=123");      // ? Query string
-var (r7, u7) = WebsiteUrl.TryCreate("https://example.com?id=1&name=test"); // ? Multiple params
+var (r6, u6) = WebsiteUrl.TryCreate("https://example.com?id=123");      // ✓ Query string
+var (r7, u7) = WebsiteUrl.TryCreate("https://example.com?id=1&name=test"); // ✓ Multiple params
 
 // With fragments
-var (r8, u8) = WebsiteUrl.TryCreate("https://example.com#section");     // ? Fragment
-var (r9, u9) = WebsiteUrl.TryCreate("https://example.com/page#top");    // ? Path + fragment
+var (r8, u8) = WebsiteUrl.TryCreate("https://example.com#section");     // ✓ Fragment
+var (r9, u9) = WebsiteUrl.TryCreate("https://example.com/page#top");    // ✓ Path + fragment
 
 // Subdomains
-var (r10, u10) = WebsiteUrl.TryCreate("https://blog.example.com");      // ? Subdomain
-var (r11, u11) = WebsiteUrl.TryCreate("https://api.v2.example.com");    // ? Multiple subdomains
+var (r10, u10) = WebsiteUrl.TryCreate("https://blog.example.com");      // ✓ Subdomain
+var (r11, u11) = WebsiteUrl.TryCreate("https://api.v2.example.com");    // ✓ Multiple subdomains
 
 // Ports
-var (r12, u12) = WebsiteUrl.TryCreate("https://example.com:8080");      // ? Custom port
-var (r13, u13) = WebsiteUrl.TryCreate("http://localhost:3000");         // ? Localhost with port
+var (r12, u12) = WebsiteUrl.TryCreate("https://example.com:8080");      // ✓ Custom port
+var (r13, u13) = WebsiteUrl.TryCreate("http://localhost:3000");         // ✓ Localhost with port
 ```
 
 #### Invalid Website URLs
 
 ```csharp
 // Missing protocol
-var (r1, u1) = WebsiteUrl.TryCreate("www.example.com");                 // ? No protocol
-var (r2, u2) = WebsiteUrl.TryCreate("example.com");                     // ? No protocol
+var (r1, u1) = WebsiteUrl.TryCreate("www.example.com");                 // ✗ No protocol
+var (r2, u2) = WebsiteUrl.TryCreate("example.com");                     // ✗ No protocol
 
 // Invalid protocol
-var (r3, u3) = WebsiteUrl.TryCreate("ftp://example.com");               // ? FTP not supported
-var (r4, u4) = WebsiteUrl.TryCreate("file:///path/to/file");            // ? File protocol
+var (r3, u3) = WebsiteUrl.TryCreate("ftp://example.com");               // ✗ FTP not supported
+var (r4, u4) = WebsiteUrl.TryCreate("file:///path/to/file");            // ✗ File protocol
 
 // Invalid format
-var (r5, u5) = WebsiteUrl.TryCreate("https://");                        // ? Incomplete
-var (r6, u6) = WebsiteUrl.TryCreate("not-a-url");                       // ? Invalid format
+var (r5, u5) = WebsiteUrl.TryCreate("https://");                        // ✗ Incomplete
+var (r6, u6) = WebsiteUrl.TryCreate("not-a-url");                       // ✗ Invalid format
 
 // Empty or null
-var (r7, u7) = WebsiteUrl.TryCreate("");                                // ? Empty
-var (r8, u8) = WebsiteUrl.TryCreate(null);                              // ? Null
+var (r7, u7) = WebsiteUrl.TryCreate("");                                // ✗ Empty
+var (r8, u8) = WebsiteUrl.TryCreate(null);                              // ✗ Null
 ```
 
 ---
 
-## ?? Domain Model
+## 📞 Domain Model
 
 ### ContactInformation
 
@@ -379,7 +379,7 @@ if (result.IsValid)
 #### Validation Examples
 
 ```csharp
-// ? Valid - Minimal contact (email + phone only)
+// ✓ Valid - Minimal contact (email + phone only)
 var (r1, c1) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "john@example.com",
@@ -387,7 +387,7 @@ var (r1, c1) = ContactInformation.TryCreate(
 );
 // r1.IsValid == true
 
-// ? Valid - With secondary phone
+// ✓ Valid - With secondary phone
 var (r2, c2) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "jane@example.com",
@@ -396,7 +396,7 @@ var (r2, c2) = ContactInformation.TryCreate(
 );
 // r2.IsValid == true
 
-// ? Valid - With website
+// ✓ Valid - With website
 var (r3, c3) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "test@example.com",
@@ -405,7 +405,7 @@ var (r3, c3) = ContactInformation.TryCreate(
 );
 // r3.IsValid == true
 
-// ? Valid - With all fields
+// ✓ Valid - With all fields
 var (r4, c4) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "admin@example.com",
@@ -415,7 +415,7 @@ var (r4, c4) = ContactInformation.TryCreate(
 );
 // r4.IsValid == true
 
-// ? Invalid - Invalid email
+// ✗ Invalid - Invalid email
 var (r5, c5) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "invalid-email",
@@ -423,7 +423,7 @@ var (r5, c5) = ContactInformation.TryCreate(
 );
 // r5.IsValid == false, error on Email
 
-// ? Invalid - Invalid primary phone
+// ✗ Invalid - Invalid primary phone
 var (r6, c6) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "john@example.com",
@@ -431,7 +431,7 @@ var (r6, c6) = ContactInformation.TryCreate(
 );
 // r6.IsValid == false, error on PrimaryPhone
 
-// ? Invalid - Invalid secondary phone
+// ✗ Invalid - Invalid secondary phone
 var (r7, c7) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "john@example.com",
@@ -440,7 +440,7 @@ var (r7, c7) = ContactInformation.TryCreate(
 );
 // r7.IsValid == false, error on SecondaryPhone
 
-// ? Invalid - Invalid website
+// ✗ Invalid - Invalid website
 var (r8, c8) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "john@example.com",
@@ -449,7 +449,7 @@ var (r8, c8) = ContactInformation.TryCreate(
 );
 // r8.IsValid == false, error on Website
 
-// ? Invalid - Multiple errors
+// ✗ Invalid - Multiple errors
 var (r9, c9) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "invalid-email",
@@ -468,8 +468,8 @@ var (r1, c1) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "test@example.com",
     "+1-555-123-4567",
-    "",  // Empty string ? null
-    ""   // Empty string ? null
+    "",  // Empty string → null
+    ""   // Empty string → null
 );
 // c1.SecondaryPhone == null
 // c1.Website == null
@@ -479,8 +479,8 @@ var (r2, c2) = ContactInformation.TryCreate(
     CountryCode.UnitedStates,
     "test@example.com",
     "+1-555-123-4567",
-    "   ",  // Whitespace ? null
-    "   "   // Whitespace ? null
+    "   ",  // Whitespace → null
+    "   "   // Whitespace → null
 );
 // c2.SecondaryPhone == null
 // c2.Website == null
@@ -585,7 +585,7 @@ Console.WriteLine(c4.ToString());
 
 ---
 
-## ?? Common Patterns
+## 📋 Common Patterns
 
 ### Validation Pattern
 
@@ -634,7 +634,7 @@ var deserialized = JsonSerializer.Deserialize<ContactInformation>(json);
 
 ---
 
-## ?? Real-World Examples
+## 🎯 Real-World Examples
 
 ### User Registration
 
@@ -1032,7 +1032,7 @@ public class CommunicationService
 
 ---
 
-## ?? Related Documentation
+## 🔗 Related Documentation
 
 - [Main README](../README.md) - Complete library overview
 - [Address README](address_readme.md) - Physical address validation
@@ -1040,7 +1040,7 @@ public class CommunicationService
 
 ---
 
-## ?? API Reference
+## 📚 API Reference
 
 For complete API documentation, see:
 - XML documentation comments in source code
@@ -1050,7 +1050,7 @@ For complete API documentation, see:
 
 ---
 
-## ?? Supported Countries for Phone Numbers
+## 🌍 Supported Countries for Phone Numbers
 
 The `PhoneNumber` type supports country-specific validation for 30+ countries:
 
@@ -1093,7 +1093,7 @@ The `PhoneNumber` type supports country-specific validation for 30+ countries:
 
 ---
 
-## ?? Email Validation Standards
+## ✉️ Email Validation Standards
 
 The `EmailAddress` type validates according to **RFC 5322** standards:
 
