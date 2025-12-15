@@ -12,8 +12,8 @@
     <Description>A .NET library that provides strongly-typed, self-validating primitive value objects to eliminate primitive obsession and enforce domain constraints at compile-time.</Description>
     <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/rbmayordomo/validated-primitives</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/rbmayordomo/validated-primitives</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/robertmayordomo/Validated.Primitives</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/robertmayordomo/Validated.Primitives</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>validation;value-objects;ddd;domain-driven-design;primitives;strongly-typed;email-validation;phone-validation;postal-code;domain-validation;self-validating;primitive-obsession;type-safety;immutable;datetime-validation;url-validation;ip-validation;credit-card;payment;csharp;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
