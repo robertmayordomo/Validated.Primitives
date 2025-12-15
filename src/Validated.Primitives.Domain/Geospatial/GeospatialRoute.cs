@@ -1,5 +1,7 @@
-using Validated.Primitives.Validation;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
+using Validated.Primitives.Validation;
 
 namespace Validated.Primitives.Domain.Geospatial;
 
@@ -126,7 +128,7 @@ public sealed record GeospatialRoute
             : "Route: ";
 
         description += $"{Segments.Count} segment{(Segments.Count == 1 ? "" : "s")}, " +
-                      $"Total distance: {TotalDistanceKilometers:F2} km ({TotalDistanceMiles:F2} mi)";
+                       $"Total distance: {TotalDistanceKilometers:F2} km ({TotalDistanceMiles:F2} mi)";
 
         if (StartingPoint != null && EndingPoint != null)
         {

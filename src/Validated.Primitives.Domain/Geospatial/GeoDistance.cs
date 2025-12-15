@@ -1,3 +1,4 @@
+using System;
 using Validated.Primitives.Validation;
 using System.Text.Json.Serialization;
 
