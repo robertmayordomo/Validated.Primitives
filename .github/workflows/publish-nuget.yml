@@ -52,7 +52,7 @@ jobs:
         echo "Commit Count: ${{ steps.version.outputs.commit_count }}"
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     
@@ -139,14 +139,14 @@ jobs:
           --skip-duplicate
     
     - name: Upload NuGet Package Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: nuget-packages-${{ steps.version.outputs.version }}
         path: ./artifacts/*.nupkg
         retention-days: 90
     
     - name: Upload Symbol Package Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: always()
       with:
         name: symbol-packages-${{ steps.version.outputs.version }}

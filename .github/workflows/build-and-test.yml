@@ -50,7 +50,7 @@ jobs:
         echo "InformationalVersion: ${{ steps.gitversion.outputs.informationalVersion }}"
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     
@@ -70,7 +70,7 @@ jobs:
       run: dotnet test --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
     
     - name: Publish Test Results
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v2
       if: always() && github.event_name == 'pull_request'
       with:
         name: Test Results
@@ -79,7 +79,7 @@ jobs:
         fail-on-error: false
     
     - name: Code Coverage Report
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       if: always()
       with:
         files: '**/coverage.cobertura.xml'
@@ -112,7 +112,7 @@ jobs:
     
     - name: Upload NuGet Package Artifact
       if: github.event_name != 'pull_request'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: nuget-package
         path: ./artifacts/*.nupkg
@@ -120,7 +120,7 @@ jobs:
     
     - name: Upload Symbol Package Artifact
       if: github.event_name != 'pull_request'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: symbol-package
         path: ./artifacts/*.snupkg
