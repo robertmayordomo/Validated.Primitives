@@ -1,6 +1,6 @@
 # Validated Primitives
 
-[![Build & Test](https://github.com/robertmayordomo/Validated.PrimitivesV1/actions/workflows/build-test-publish.yml/badge.svg)](https://github.com/robertmayordomo/Validated.PrimitivesV1/actions/workflows/build-test-publish.yml)
+[![Build & Test](https://github.com/robertmayordomo/Validated.Primitives/actions/workflows/build-test-publish.yml/badge.svg)](https://github.com/robertmayordomo/Validated.Primitives/actions/workflows/build-test-publish.yml)
 [![NuGet](https://img.shields.io/nuget/v/Validated.Primitives.svg)](https://www.nuget.org/packages/Validated.Primitives/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Validated.Primitives.svg)](https://www.nuget.org/packages/Validated.Primitives/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
