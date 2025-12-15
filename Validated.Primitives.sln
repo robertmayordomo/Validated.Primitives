@@ -10,6 +10,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Validated.Primitives.Domain
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Validated.Primitives.Domain.Tests", "tests\Validated.Primitives.Domain.Tests\Validated.Primitives.Domain.Tests.csproj", "{77CCC108-2AB4-B7BA-7106-FC4449F86DE9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{74FF7009-CA09-4F1A-ABC0-0C3B4DFD68EC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{35708AA9-814B-43F4-97AD-CC163074BEB1}"
+	ProjectSection(SolutionItems) = preProject
+		doc\barcode_examples.md = doc\barcode_examples.md
+		doc\builders_examples.md = doc\builders_examples.md
+		doc\contactinformation_examples.md = doc\contactinformation_examples.md
+		doc\geoboundary_examples.md = doc\geoboundary_examples.md
+		doc\geodistance_examples.md = doc\geodistance_examples.md
+		doc\geospatial_examples.md = doc\geospatial_examples.md
+		doc\tracking_examples.md = doc\tracking_examples.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

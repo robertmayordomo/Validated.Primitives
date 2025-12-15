@@ -153,7 +153,7 @@ dotnet add package Validated.Primitives.Domain
 - **Personal information** - PersonName, ContactInformation
 - **Address models** - Address (with AddressBuilder)
 - **Financial models** - CreditCardDetails (with CreditCardBuilder), BankingDetails (with BankingDetailsBuilder)
-- **Geospatial models** - Coordinate, GeoDistance, GeoBoundary, GeospatialRoute, RouteSegment (with builders)
+- [**Geospatial models**](doc/geospatial_readme.md) - Coordinate, GeoDistance, GeoBoundary, GeospatialRoute, RouteSegment (with builders)
 - **JSON serialization** support for all domain models
 
 ## Available Domain Objects

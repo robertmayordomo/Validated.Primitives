@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Validated.Primitives.Validation;
 using Validated.Primitives.ValueObjects;
 
