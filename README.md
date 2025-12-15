@@ -132,6 +132,7 @@ dotnet add package Validated.Primitives
 - **`IpAddress`** - Valid IPv4 or IPv6 addresses
 - **`MacAddress`** - MAC address validation supporting multiple formats (colon `AA:BB:CC:DD:EE:FF`, hyphen `AA-BB-CC-DD-EE-FF`, dot-separated Cisco `AABB.CCDD.EEFF`, continuous `AABBCCDDEEFF`), multicast/broadcast/all-zeros detection, OUI/NIC extraction, and address type identification (locally/universally administered, unicast/multicast)
 - **`Barcode`** - Barcode validation supporting multiple formats (UPC-A 12-digit, EAN-13 13-digit, EAN-8 8-digit, Code39 alphanumeric with `*` delimiters, Code128 alphanumeric), automatic format detection, checksum validation for numeric formats, and normalized value extraction
+- **`TrackingNumber`** - Shipping tracking number validation supporting 16 carrier formats (UPS, FedEx Express/Ground/SmartPost, USPS, DHL Express/eCommerce/Global Mail, Amazon Logistics, Royal Mail, Canada Post, Australia Post, TNT, China Post, LaserShip, OnTrac), automatic carrier detection, and normalized value extraction
 
 ### 📅 Date & Time
 - **`DateOfBirth`** - Must be in the past, cannot be future date
@@ -667,3 +668,328 @@ public class AddressesController : ControllerBase
 - `AddressBuilder` - Required: street, city, country, postalCode | Optional: addressLine2, stateProvince
 - `CreditCardBuilder` - Required: cardNumber, securityCode, expiration | Multiple expiration formats supported
 - `BankingDetailsBuilder` - Required: country, accountNumber | Optional: swiftCode, routingNumber (USA), sortCode (UK/Ireland) | Convenience methods for US, UK, and international banking
+
+## Tracking Number Usage Examples
+
+The **`TrackingNumber`** validated primitive supports validation of shipping tracking numbers across multiple carriers:
+
+### Supported Formats
+
+- **UPS** - 18 characters starting with "1Z"
+- **FedEx Express** - 12 digits
+- **FedEx Ground** - 15 digits  
+- **FedEx SmartPost** - 22 digits
+- **USPS** - 20-22 alphanumeric, or 13 characters (2 letters + 9 digits + 2 letters ending in "US" or other non-GB/CN/IE codes)
+- **DHL Express** - 10 digits
+- **DHL eCommerce** - 22 alphanumeric starting with "GM"
+- **DHL Global Mail** - 13-16 alphanumeric (use mixed letters/digits for 13-char to avoid ambiguity with Australia Post)
+- **Amazon Logistics** - "TBA" followed by 12 digits
+- **Royal Mail** - 13 characters (2 letters + 9 digits + 2 letters ending in "GB")
+- **Canada Post** - 16 alphanumeric
+- **Australia Post** - 13 digits (all numeric)
+- **TNT** - 9 digits (13-digit TNT numbers are ambiguous with Australia Post)
+- **China Post** - 13 characters (2 letters + 9 digits + 2 letters ending in "CN")
+- **Irish Post (An Post)** - 13 characters (2 letters + 9 digits + 2 letters ending in "IE")
+- **LaserShip** - "1LS" followed by 12 digits
+- **OnTrac** - "C" followed by 14 digits
+
+**Note on Ambiguous Formats:**
+- **13-character alphanumeric (2 letters + 9 digits + 2 letters)**: Detected by country suffix
+  - Ends with "GB" → Royal Mail
+  - Ends with "CN" → China Post
+  - Ends with "IE" → Irish Post
+  - Ends with "US" or other codes → USPS (international tracking format)
+- **13-digit all-numeric**: Australia Post vs TNT vs DHL Global Mail
+  - Defaults to **Australia Post** (most common)
+  - Use 9-digit format for unambiguous TNT detection
+  - Use 13-char alphanumeric (with letters) for unambiguous DHL Global Mail detection
+- **14-16 characters**: 
+  - All-numeric → Could be Australia Post (extended) or DHL Global Mail (defaults to DHL Global Mail)
+  - With letters → DHL Global Mail
+
+### Basic Usage
+
+```csharp
+using Validated.Primitives.ValueObjects;
+
+// Validate a UPS tracking number
+var (result, tracking) = TrackingNumber.TryCreate("1Z999AA10123456784");
+if (result.IsValid)
+{
+    Console.WriteLine($"Valid tracking: {tracking.Value}");
+    Console.WriteLine($"Carrier: {tracking.GetCarrierName()}"); // Output: UPS
+}
+
+// Validate a FedEx tracking number
+var (fedexResult, fedexTracking) = TrackingNumber.TryCreate("986578788855");
+if (fedexResult.IsValid)
+{
+    Console.WriteLine($"FedEx tracking: {fedexTracking.Value}");
+    Console.WriteLine($"Carrier: {fedexTracking.GetCarrierName()}"); // Output: FedEx Express
+}
+
+// Validate an Amazon tracking number
+var (amazonResult, amazonTracking) = TrackingNumber.TryCreate("TBA123456789012");
+if (amazonResult.IsValid)
+{
+    Console.WriteLine($"Amazon tracking: {amazonTracking.Value}");
+    Console.WriteLine($"Carrier: {amazonTracking.GetCarrierName()}"); // Output: Amazon Logistics
+}
+
+// Validate an Irish Post tracking number
+var (irishResult, irishTracking) = TrackingNumber.TryCreate("RX123456789IE");
+if (irishResult.IsValid)
+{
+    Console.WriteLine($"Irish Post tracking: {irishTracking.Value}");
+    Console.WriteLine($"Carrier: {irishTracking.GetCarrierName()}"); // Output: Irish Post
+}
+```
+
+### Tracking Number with Separators
+
+Tracking numbers with hyphens or spaces are automatically normalized:
+
+```csharp
+// Input with separators
+var (result, tracking) = TrackingNumber.TryCreate("1Z-999AA-1012345-6784");
+if (result.IsValid)
+{
+    Console.WriteLine($"Original: {tracking.Value}");        // Output: 1Z-999AA-1012345-6784
+    Console.WriteLine($"Normalized: {tracking.GetNormalized()}"); // Output: 1Z999AA10123456784
+    Console.WriteLine($"Carrier: {tracking.GetCarrierName()}");   // Output: UPS
+}
+
+// Lowercase input is also handled
+var (result2, tracking2) = TrackingNumber.TryCreate("1z999aa10123456784");
+if (result2.IsValid)
+{
+    Console.WriteLine($"Normalized: {tracking2.GetNormalized()}"); // Output: 1Z999AA10123456784
+}
+```
+
+### E-Commerce Shipment Example
+
+```csharp
+public class Shipment
+{
+    public int Id { get; set; }
+    public string OrderId { get; set; } = string.Empty;
+    public TrackingNumber PrimaryTracking { get; set; } = null!;
+    public TrackingNumber? SecondaryTracking { get; set; }
+    public TrackingNumber? InternationalTracking { get; set; }
+    public DateTime ShippedDate { get; set; }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+public class ShipmentsController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult CreateShipment([FromBody] CreateShipmentRequest request)
+    {
+        var shipment = new Shipment 
+        { 
+            OrderId = request.OrderId,
+            ShippedDate = DateTime.UtcNow
+        };
+
+        // Validate primary tracking number
+        var (primaryResult, primaryTracking) = TrackingNumber.TryCreate(
+            request.PrimaryTracking, 
+            nameof(request.PrimaryTracking));
+        
+        if (!primaryResult.IsValid)
+            return BadRequest(new { errors = primaryResult.Errors });
+            
+        shipment.PrimaryTracking = primaryTracking!;
+
+        // Validate optional secondary tracking
+        if (!string.IsNullOrEmpty(request.SecondaryTracking))
+        {
+            var (secondaryResult, secondaryTracking) = TrackingNumber.TryCreate(
+                request.SecondaryTracking, 
+                nameof(request.SecondaryTracking));
+            
+            if (!secondaryResult.IsValid)
+                return BadRequest(new { errors = secondaryResult.Errors });
+                
+            shipment.SecondaryTracking = secondaryTracking;
+        }
+
+        // Validate optional international tracking
+        if (!string.IsNullOrEmpty(request.InternationalTracking))
+        {
+            var (intlResult, intlTracking) = TrackingNumber.TryCreate(
+                request.InternationalTracking, 
+                nameof(request.InternationalTracking));
+            
+            if (!intlResult.IsValid)
+                return BadRequest(new { errors = intlResult.Errors });
+                
+            shipment.InternationalTracking = intlTracking;
+        }
+
+        // Save shipment...
+        return Ok(new 
+        { 
+            id = 1, 
+            orderId = shipment.OrderId,
+            primaryCarrier = shipment.PrimaryTracking.GetCarrierName(),
+            trackingNumber = shipment.PrimaryTracking.Value
+        });
+    }
+
+    [HttpGet("track/{trackingNumber}")]
+    public IActionResult TrackShipment(string trackingNumber)
+    {
+        var (result, tracking) = TrackingNumber.TryCreate(trackingNumber);
+        if (!result.IsValid)
+            return BadRequest(new { error = "Invalid tracking number format" });
+
+        // Search by normalized tracking number
+        var normalizedTracking = tracking!.GetNormalized();
+        var carrier = tracking.GetCarrierName();
+        
+        // Lookup shipment logic here...
+        return Ok(new 
+        { 
+            trackingNumber = normalizedTracking, 
+            carrier = carrier,
+            format = tracking.Format
+        });
+    }
+
+    [HttpGet("carriers")]
+    public IActionResult GetSupportedCarriers()
+    {
+        var carriers = Enum.GetValues<TrackingNumberFormat>()
+            .Where(f => f != TrackingNumberFormat.Unknown)
+            .Select(f => new 
+            { 
+                format = f.ToString(), 
+                name = GetCarrierDisplayName(f) 
+            });
+            
+        return Ok(carriers);
+    }
+
+    private string GetCarrierDisplayName(TrackingNumberFormat format)
+    {
+        // Create a dummy tracking number to get the carrier name
+        // In practice, you'd have a mapping or use the GetCarrierName method
+        return format switch
+        {
+            TrackingNumberFormat.UPS => "UPS",
+            TrackingNumberFormat.FedExExpress => "FedEx Express",
+            TrackingNumberFormat.FedExGround => "FedEx Ground",
+            TrackingNumberFormat.FedExSmartPost => "FedEx SmartPost",
+            TrackingNumberFormat.USPS => "USPS",
+            TrackingNumberFormat.DHLExpress => "DHL Express",
+            TrackingNumberFormat.DHLEcommerce => "DHL eCommerce",
+            TrackingNumberFormat.DHLGlobalMail => "DHL Global Mail",
+            TrackingNumberFormat.AmazonLogistics => "Amazon Logistics",
+            TrackingNumberFormat.RoyalMail => "Royal Mail",
+            TrackingNumberFormat.CanadaPost => "Canada Post",
+            TrackingNumberFormat.AustraliaPost => "Australia Post",
+            TrackingNumberFormat.TNT => "TNT",
+            TrackingNumberFormat.ChinaPost => "China Post",
+            TrackingNumberFormat.LaserShip => "LaserShip",
+            TrackingNumberFormat.OnTrac => "OnTrac",
+            _ => "Unknown"
+        };
+    }
+}
+```
+
+### Validation Error Handling
+
+```csharp
+var (result, tracking) = TrackingNumber.TryCreate("INVALID-TRACKING", "ShipmentTracking");
+
+if (!result.IsValid)
+{
+    // Display all validation errors
+    Console.WriteLine("Validation failed:");
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine($"  {error.MemberName}: {error.Message}");
+    }
+    
+    // Or get as bullet list
+    Console.WriteLine(result.ToBulletList());
+    
+    // Or get as dictionary for JSON response
+    var errorDict = result.ToDictionary();
+}
+```
+
+### JSON Serialization
+
+Tracking numbers serialize as simple strings in JSON:
+
+```csharp
+var shipment = new Shipment
+{
+    Id = 1,
+    OrderId = "ORD-12345",
+    PrimaryTracking = TrackingNumber.TryCreate("1Z999AA10123456784").Value!,
+    SecondaryTracking = TrackingNumber.TryCreate("986578788855").Value,
+    ShippedDate = DateTime.UtcNow
+};
+
+var json = JsonSerializer.Serialize(shipment);
+// Output: {"Id":1,"OrderId":"ORD-12345","PrimaryTracking":"1Z999AA10123456784","SecondaryTracking":"986578788855",...}
+
+var deserialized = JsonSerializer.Deserialize<Shipment>(json);
+Console.WriteLine(deserialized.PrimaryTracking.GetCarrierName()); // Output: UPS
+Console.WriteLine(deserialized.SecondaryTracking?.GetCarrierName()); // Output: FedEx Express
+```
+
+### Multi-Carrier Shipment Tracking
+
+```csharp
+public class MultiCarrierShipment
+{
+    public string OrderId { get; set; } = string.Empty;
+    public List<ShipmentLeg> ShipmentLegs { get; set; } = new();
+}
+
+public class ShipmentLeg
+{
+    public TrackingNumber Tracking { get; set; } = null!;
+    public string Carrier => Tracking.GetCarrierName();
+    public string Stage { get; set; } = string.Empty;
+    public DateTime EstimatedDelivery { get; set; }
+}
+
+// Create a multi-carrier shipment (e.g., international with handoff)
+var shipment = new MultiCarrierShipment
+{
+    OrderId = "ORD-99999",
+    ShipmentLegs = new List<ShipmentLeg>
+    {
+        new ShipmentLeg
+        {
+            Tracking = TrackingNumber.TryCreate("1Z999AA10123456784").Value!, // UPS domestic
+            Stage = "Origin",
+            EstimatedDelivery = DateTime.UtcNow.AddDays(2)
+        },
+        new ShipmentLeg
+        {
+            Tracking = TrackingNumber.TryCreate("RX123456789IE").Value!, // Royal Mail international
+            Stage = "Destination",
+            EstimatedDelivery = DateTime.UtcNow.AddDays(7)
+        }
+    }
+};
+
+// Display tracking information
+foreach (var leg in shipment.ShipmentLegs)
+{
+    Console.WriteLine($"Stage: {leg.Stage}");
+    Console.WriteLine($"Carrier: {leg.Carrier}");
+    Console.WriteLine($"Tracking: {leg.Tracking.Value}");
+    Console.WriteLine($"Format: {leg.Tracking.Format}");
+    Console.WriteLine($"Estimated Delivery: {leg.EstimatedDelivery:yyyy-MM-dd}");
+    Console.WriteLine();
+}
