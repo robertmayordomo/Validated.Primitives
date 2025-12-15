@@ -132,7 +132,10 @@ dotnet add package Validated.Primitives
 - **`IpAddress`** - Valid IPv4 or IPv6 addresses
 - **`MacAddress`** - MAC address validation supporting multiple formats (colon `AA:BB:CC:DD:EE:FF`, hyphen `AA-BB-CC-DD-EE-FF`, dot-separated Cisco `AABB.CCDD.EEFF`, continuous `AABBCCDDEEFF`), multicast/broadcast/all-zeros detection, OUI/NIC extraction, and address type identification (locally/universally administered, unicast/multicast)
 - **`Barcode`** - Barcode validation supporting multiple formats (UPC-A 12-digit, EAN-13 13-digit, EAN-8 8-digit, Code39 alphanumeric with `*` delimiters, Code128 alphanumeric), automatic format detection, checksum validation for numeric formats, and normalized value extraction
-- **`TrackingNumber`** - Shipping tracking number validation supporting 16 carrier formats (UPS, FedEx Express/Ground/SmartPost, USPS, DHL Express/eCommerce/Global Mail, Amazon Logistics, Royal Mail, Canada Post, Australia Post, TNT, China Post, LaserShip, OnTrac), automatic carrier detection, and normalized value extraction
+- **`TrackingNumber`** - Shipping tracking number validation supporting 17 carrier formats (UPS, FedEx Express/Ground/SmartPost, USPS, DHL Express/eCommerce/Global Mail, Amazon Logistics, Royal Mail, Canada Post, Australia Post, TNT, China Post, Irish Post, LaserShip, OnTrac), automatic carrier detection, and normalized value extraction
+
+### 📍 Geographic Coordinates
+- **`Latitude`** - Validated latitude coordinate (-90 to +90 degrees) with configurable decimal places (0-8), hemisphere detection (North/South), and cardinal direction formatting
 
 ### 📅 Date & Time
 - **`DateOfBirth`** - Must be in the past, cannot be future date
@@ -993,3 +996,243 @@ foreach (var leg in shipment.ShipmentLegs)
     Console.WriteLine($"Estimated Delivery: {leg.EstimatedDelivery:yyyy-MM-dd}");
     Console.WriteLine();
 }
+
+```
+
+## Latitude Usage Examples
+
+The **`Latitude`** validated primitive represents geographic latitude coordinates with precise validation and formatting.
+
+### Basic Usage
+
+```csharp
+using Validated.Primitives.ValueObjects;
+
+// Validate a latitude coordinate (New York City)
+var (result, latitude) = Latitude.TryCreate(40.7128m, decimalPlaces: 6);
+if (result.IsValid)
+{
+    Console.WriteLine($"Latitude: {latitude.Value}");           // Output: 40.7128
+    Console.WriteLine($"Formatted: {latitude.ToString()}");      // Output: 40.712800°
+    Console.WriteLine($"Hemisphere: {latitude.GetHemisphere()}"); // Output: North
+    Console.WriteLine($"Cardinal: {latitude.ToCardinalString()}"); // Output: 40.712800° N
+}
+
+// Validate a southern hemisphere latitude (Sydney)
+var (sydneyResult, sydneyLat) = Latitude.TryCreate(-33.8688m, decimalPlaces: 4);
+if (sydneyResult.IsValid)
+{
+    Console.WriteLine($"Sydney: {sydneyLat.ToCardinalString()}"); // Output: 33.8688° S
+}
+
+// Equator
+var (equatorResult, equator) = Latitude.TryCreate(0m);
+if (equatorResult.IsValid)
+{
+    Console.WriteLine($"Equator: {equator.ToCardinalString()}"); // Output: 0.000000° N
+}
+```
+
+### Valid Range
+
+Latitude values must be between **-90° (South Pole)** and **+90° (North Pole)**:
+
+```csharp
+// Valid latitudes
+var (valid1, _) = Latitude.TryCreate(90m);    // North Pole - Valid
+var (valid2, _) = Latitude.TryCreate(-90m);   // South Pole - Valid
+var (valid3, _) = Latitude.TryCreate(0m);     // Equator - Valid
+
+// Invalid latitudes
+var (invalid1, _) = Latitude.TryCreate(91m);   // Invalid: > 90
+var (invalid2, _) = Latitude.TryCreate(-100m); // Invalid: < -90
+```
+
+### Decimal Places Precision
+
+Configure decimal places (0-8) for different precision needs:
+
+```csharp
+// City-level precision (4 decimal places ≈ 11 meters)
+var (result, cityLocation) = Latitude.TryCreate(40.7128m, decimalPlaces: 4);
+Console.WriteLine(cityLocation.ToString()); // Output: 40.7128°
+
+// GPS precision (6 decimal places ≈ 0.11 meters)
+var (result, gpsLocation) = Latitude.TryCreate(40.712776m, decimalPlaces: 6);
+Console.WriteLine(gpsLocation.ToString()); // Output: 40.712776°
+
+// High precision (8 decimal places ≈ 1.1 millimeters)
+var (result, precise) = Latitude.TryCreate(40.71277621m, decimalPlaces: 8);
+Console.WriteLine(precise.ToString()); // Output: 40.71277621°
+
+// Integer degrees only
+var (result, simple) = Latitude.TryCreate(41m, decimalPlaces: 0);
+Console.WriteLine(simple.ToString()); // Output: 41°
+```
+
+### Location Tracking Example
+
+```csharp
+public class Location
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public Latitude Latitude { get; set; } = null!;
+    public decimal Longitude { get; set; } // Or create a Longitude value object
+    public DateTime Timestamp { get; set; }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+public class LocationsController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult CreateLocation([FromBody] CreateLocationRequest request)
+    {
+        // Validate latitude
+        var (latResult, latitude) = Latitude.TryCreate(
+            request.Latitude, 
+            decimalPlaces: 6, 
+            propertyName: nameof(request.Latitude));
+        
+        if (!latResult.IsValid)
+            return BadRequest(new { errors = latResult.Errors });
+
+        var location = new Location
+        {
+            Name = request.Name,
+            Latitude = latitude!,
+            Longitude = request.Longitude,
+            Timestamp = DateTime.UtcNow
+        };
+
+        // Save location...
+        return Ok(new
+        {
+            id = 1,
+            name = location.Name,
+            coordinates = new
+            {
+                latitude = location.Latitude.Value,
+                latitudeFormatted = location.Latitude.ToCardinalString(),
+                hemisphere = location.Latitude.GetHemisphere(),
+                longitude = location.Longitude
+            }
+        });
+    }
+
+    [HttpGet("{id}")]
+    public IActionResult GetLocation(int id)
+    {
+        // Retrieve location...
+        var location = new Location
+        {
+            Id = id,
+            Name = "New York City",
+            Latitude = Latitude.TryCreate(40.7128m, 6).Value!,
+            Longitude = -74.0060m,
+            Timestamp = DateTime.UtcNow
+        };
+
+        return Ok(new
+        {
+            id = location.Id,
+            name = location.Name,
+            latitude = location.Latitude.Value,
+            latitudeCardinal = location.Latitude.ToCardinalString(),
+            hemisphere = location.Latitude.GetHemisphere(),
+            longitude = location.Longitude,
+            timestamp = location.Timestamp
+        });
+    }
+}
+```
+
+### Validation Error Handling
+
+```csharp
+var (result, latitude) = Latitude.TryCreate(100m, propertyName: "UserLatitude");
+
+if (!result.IsValid)
+{
+    // Display all validation errors
+    Console.WriteLine("Validation failed:");
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine($"  {error.MemberName}: {error.Message}");
+        // Output: UserLatitude: Value must be between -90 and 90.
+    }
+    
+    // Or get as bullet list
+    Console.WriteLine(result.ToBulletList());
+    
+    // Or get as dictionary for JSON response
+    var errorDict = result.ToDictionary();
+}
+```
+
+### JSON Serialization
+
+Latitude serializes as an object with Value and DecimalPlaces:
+
+```csharp
+var location = new Location
+{
+    Id = 1,
+    Name = "New York City",
+    Latitude = Latitude.TryCreate(40.7128m, 6).Value!,
+    Longitude = -74.0060m,
+    Timestamp = DateTime.UtcNow
+};
+
+var json = JsonSerializer.Serialize(location);
+// Output: {"Id":1,"Name":"New York City","Latitude":{"Value":40.7128,"DecimalPlaces":6},"Longitude":-74.0060,...}
+
+var deserialized = JsonSerializer.Deserialize<Location>(json);
+Console.WriteLine(deserialized.Latitude.ToCardinalString()); // Output: 40.712800° N
+Console.WriteLine(deserialized.Latitude.GetHemisphere());     // Output: North
+```
+
+### Geographic Boundary Checking
+
+```csharp
+public class GeographicBounds
+{
+    public Latitude NorthBound { get; set; } = null!;
+    public Latitude SouthBound { get; set; } = null!;
+    
+    public bool Contains(Latitude latitude)
+    {
+        return latitude.Value >= SouthBound.Value && 
+               latitude.Value <= NorthBound.Value;
+    }
+}
+
+// Define bounding box for continental United States
+var bounds = new GeographicBounds
+{
+    NorthBound = Latitude.TryCreate(49.3457868m, 6).Value!, // Northern border
+    SouthBound = Latitude.TryCreate(24.5465116m, 6).Value!  // Southern border
+};
+
+// Check if location is within bounds
+var (_, newYork) = Latitude.TryCreate(40.7128m, 6);
+var (_, london) = Latitude.TryCreate(51.5074m, 6);
+
+Console.WriteLine(bounds.Contains(newYork!));  // Output: True
+Console.WriteLine(bounds.Contains(london!));   // Output: False
+```
+
+### Precision Guide
+
+| Decimal Places | Precision | Use Case |
+|---|---|---|
+| 0 | ~111 km | Country/region level |
+| 1 | ~11 km | City level |
+| 2 | ~1.1 km | Neighborhood |
+| 3 | ~110 m | Street/field |
+| 4 | ~11 m | Building/parcel |
+| 5 | ~1.1 m | Tree/entrance |
+| 6 | ~0.11 m | Standard GPS |
+| 7 | ~1.1 cm | Survey grade |
+| 8 | ~1.1 mm | Tectonic plates |
